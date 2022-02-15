@@ -13,13 +13,8 @@
           <v-btn color="primary" text link to="forgotten-password">
             Password Forgotten
           </v-btn>
-          <v-btn class="mx-3" color="primary" @click="login">
+          <v-btn class="ml-3" color="primary" @click="login">
             Login
-          </v-btn>
-          <v-btn color="white">
-            <v-icon color="black">
-              mdi-apple
-            </v-icon>
           </v-btn>
         </v-col>
       </v-row>
