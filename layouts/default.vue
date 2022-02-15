@@ -9,7 +9,7 @@
       </v-container>
     </v-main>
     <v-footer app>
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+      <span>SoWeQuiches &copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
     <v-navigation-drawer
       v-model="organization_drawer"
@@ -27,14 +27,39 @@
         </v-list-item>
 
         <v-list-item>
-          <v-select
-            v-model="selected_organization"
-            :items="organizations"
-            hide-details
-            outlined
-            dense
-            no-data-text="You are not part of an organization"
-          />
+          <v-row>
+            <v-col :cols="isAdmin ? 9 : 12">
+              <v-select
+                v-model="selected_organization"
+                item-text="name"
+                item-value="_id"
+                :items="organizations"
+                hide-details
+                outlined
+                dense
+                :loading="$fetchState.pending"
+                no-data-text="You are not part of an organization"
+              />
+            </v-col>
+            <v-col v-if="isAdmin" cols="3" class="d-flex justify-end align-center">
+              <v-tooltip color="primary" bottom>
+                <template #activator="{ on, attrs }">
+                  <v-btn
+                    block
+                    color="primary"
+                    v-bind="attrs"
+                    v-on="on"
+                    @click="create_organization_dialog = true"
+                  >
+                    <v-icon>
+                      mdi-plus
+                    </v-icon>
+                  </v-btn>
+                </template>
+                <span>Create an Organization</span>
+              </v-tooltip>
+            </v-col>
+          </v-row>
         </v-list-item>
       </v-list>
       <v-divider />
@@ -63,6 +88,49 @@
           </v-btn>
         </div>
       </template>
+      <v-dialog
+        v-model="create_organization_dialog"
+        max-width="300"
+      >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">Organization Creation</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col
+                  cols="12"
+                >
+                  <v-text-field
+                    v-model="organization_name"
+                    label="Organization Name"
+                    hide-details
+                    required
+                    outlined
+                  />
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="create_organization_dialog = false"
+            >
+              Close
+            </v-btn>
+            <v-btn
+              color="primary"
+              @click="createOrganization"
+            >
+              Create
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-navigation-drawer>
   </v-app>
 </template>
@@ -71,21 +139,11 @@
 export default {
   name: 'DefaultLayout',
   middleware: 'auth',
+  fetchOnServer: false,
   data () {
     return {
-      organization_drawer: false,
-      organizations: [
-        { text: 'Organization 1', value: 1 },
-        { text: 'Organization 2', value: 2 },
-        { text: 'Organization 3', value: 3 },
-        { text: 'Organization 4', value: 4 },
-        { text: 'Organization 5', value: 5 },
-        { text: 'Organization 6', value: 6 },
-        { text: 'Organization 7', value: 7 },
-        { text: 'Organization 8', value: 8 },
-        { text: 'Organization 9', value: 9 },
-        { text: 'Organization 10', value: 10 }
-      ],
+      organization_drawer: true,
+      organizations: [],
       selected_organization: 1,
       groups: [
         { name: 'Group 1', id: 1 },
@@ -99,18 +157,46 @@ export default {
         { name: 'Group 9', id: 9 },
         { name: 'Group 10', id: 10 }
       ],
-      selected_group: 1
+      selected_group: 1,
+      create_organization_dialog: false,
+      organization_name: ''
     }
+  },
+  fetch () {
+    this.$axios.get('/organizations')
+      .then(({ data }) => {
+        this.organizations = data
+        this.selected_organization = data[0]._id
+        this.getOrganizationGroups()
+      })
   },
   computed: {
     user () {
       return this.$auth.user
+    },
+    isAdmin () {
+      return this.user.isAdmin
     }
   },
   methods: {
     logout () {
       this.$auth.logout()
       this.$router.push('/login')
+    },
+    createOrganization () {
+      this.$axios.post('/organizations', {
+        name: this.organization_name
+      }).then(() => {
+        this.create_organization_dialog = false
+        this.organization_name = ''
+        this.$fetch()
+      })
+    },
+    getOrganizationGroups () {
+      this.$axios.get(`/organizations/${this.selected_organization}`)
+        .then(({ data }) => {
+          console.log(data)
+        })
     }
   }
 }

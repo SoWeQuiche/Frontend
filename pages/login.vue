@@ -24,7 +24,7 @@
         </v-col>
         <v-col cols="12" class="d-flex justify-end">
           <v-btn color="primary" text link to="forgotten-password">
-            Password Forgotten
+            Forgotten Password
           </v-btn>
           <v-btn class="ml-3" color="primary" :loading="loading" @click="login">
             Login
