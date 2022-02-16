@@ -27,32 +27,77 @@
         </v-list-item>
 
         <v-list-item>
-          <v-row>
-            <v-col :cols="isAdmin ? 9 : 12">
+          <v-row class="d-flex justify-center">
+            <v-col cols="12">
               <v-select
                 v-model="selected_organization"
                 item-text="name"
                 item-value="_id"
                 :items="organizations"
+                label="Organization"
                 hide-details
                 outlined
                 dense
                 :loading="$fetchState.pending"
                 no-data-text="You are not part of an organization"
+                @change="getOrganizationGroups"
               />
             </v-col>
-            <v-col v-if="isAdmin" cols="3" class="d-flex justify-end align-center">
+          </v-row>
+        </v-list-item>
+        <v-list-item v-if="isAdmin || isOrganizationAdmin">
+          <v-row class="d-flex justify-center">
+            <v-col v-if="isOrganizationAdmin" cols="3">
               <v-tooltip color="primary" bottom>
                 <template #activator="{ on, attrs }">
                   <v-btn
                     block
+                    small
+                    color="primary"
+                    v-bind="attrs"
+                    v-on="on"
+                    @click="create_group_dialog = true"
+                  >
+                    <v-icon>
+                      mdi-account-group
+                    </v-icon>
+                  </v-btn>
+                </template>
+                <span>Create a Group</span>
+              </v-tooltip>
+            </v-col>
+            <v-col v-if="isOrganizationAdmin" cols="3">
+              <v-tooltip color="red" bottom>
+                <template #activator="{ on, attrs }">
+                  <v-btn
+                    block
+                    small
+                    color="red"
+                    v-bind="attrs"
+                    v-on="on"
+                    @click="create_group_dialog = true"
+                  >
+                    <v-icon>
+                      mdi-delete
+                    </v-icon>
+                  </v-btn>
+                </template>
+                <span>Delete Organization</span>
+              </v-tooltip>
+            </v-col>
+            <v-col v-if="isAdmin" cols="3">
+              <v-tooltip color="primary" bottom>
+                <template #activator="{ on, attrs }">
+                  <v-btn
+                    block
+                    small
                     color="primary"
                     v-bind="attrs"
                     v-on="on"
                     @click="create_organization_dialog = true"
                   >
                     <v-icon>
-                      mdi-plus
+                      mdi-domain
                     </v-icon>
                   </v-btn>
                 </template>
@@ -66,7 +111,7 @@
       <v-list nav dense>
         <v-list-item
           v-for="group in groups"
-          :key="group.id"
+          :key="group._id"
           color="primary"
           @click="logout"
         >
@@ -78,6 +123,10 @@
           <v-list-item-title>{{ group.name }}</v-list-item-title>
         </v-list-item>
       </v-list>
+      <div v-if="!groups.length" class="grey--text text-center">
+        <span v-if="!groups_loading">No group available for tha Organization</span>
+        <v-progress-circular v-else indeterminate />
+      </div>
       <template #append>
         <div class="pa-2">
           <v-btn block color="red" @click="logout">
@@ -88,6 +137,50 @@
           </v-btn>
         </div>
       </template>
+      <v-dialog
+        v-model="create_group_dialog"
+        max-width="300"
+      >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">Group Creation</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col
+                  cols="12"
+                >
+                  <v-text-field
+                    v-model="group_name"
+                    label="Group Name"
+                    hide-details
+                    required
+                    outlined
+                    @keyup.enter="createGroup"
+                  />
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="create_group_dialog = false"
+            >
+              Close
+            </v-btn>
+            <v-btn
+              color="primary"
+              @click="createGroup"
+            >
+              Create
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <v-dialog
         v-model="create_organization_dialog"
         max-width="300"
@@ -108,6 +201,7 @@
                     hide-details
                     required
                     outlined
+                    @keyup.enter="createOrganization"
                   />
                 </v-col>
               </v-row>
@@ -144,29 +238,22 @@ export default {
     return {
       organization_drawer: true,
       organizations: [],
-      selected_organization: 1,
-      groups: [
-        { name: 'Group 1', id: 1 },
-        { name: 'Group 2', id: 2 },
-        { name: 'Group 3', id: 3 },
-        { name: 'Group 4', id: 4 },
-        { name: 'Group 5', id: 5 },
-        { name: 'Group 6', id: 6 },
-        { name: 'Group 7', id: 7 },
-        { name: 'Group 8', id: 8 },
-        { name: 'Group 9', id: 9 },
-        { name: 'Group 10', id: 10 }
-      ],
-      selected_group: 1,
+      organization_name: '',
       create_organization_dialog: false,
-      organization_name: ''
+      selected_organization: null,
+      selected_organization_admins: [],
+      groups: [],
+      group_name: '',
+      groups_loading: false,
+      selected_group: 1,
+      create_group_dialog: false
     }
   },
   fetch () {
     this.$axios.get('/organizations')
       .then(({ data }) => {
         this.organizations = data
-        this.selected_organization = data[0]._id
+        if (!this.selected_organization) { this.selected_organization = data[0]._id }
         this.getOrganizationGroups()
       })
   },
@@ -176,6 +263,9 @@ export default {
     },
     isAdmin () {
       return this.user.isAdmin
+    },
+    isOrganizationAdmin () {
+      return this.isAdmin || this.selected_organization_admins.includes(this.user._id)
     }
   },
   methods: {
@@ -193,10 +283,25 @@ export default {
       })
     },
     getOrganizationGroups () {
+      this.groups_loading = true
+      this.groups = []
       this.$axios.get(`/organizations/${this.selected_organization}`)
         .then(({ data }) => {
-          console.log(data)
+          this.groups = data.groups
+          this.selected_organization_admins = data.admins
         })
+        .finally(() => {
+          this.groups_loading = false
+        })
+    },
+    createGroup () {
+      this.groups = []
+      this.$axios.post(`/organizations/${this.selected_organization}/groups`, {
+        name: this.group_name
+      }).then(() => {
+        this.create_group_dialog = false
+        this.getOrganizationGroups()
+      })
     }
   }
 }
