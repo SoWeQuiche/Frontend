@@ -53,13 +53,14 @@
                   <v-btn
                     block
                     small
+                    outlined
                     color="primary"
                     v-bind="attrs"
                     v-on="on"
                     @click="create_group_dialog = true"
                   >
                     <v-icon>
-                      mdi-account-group
+                      mdi-account-group-outline
                     </v-icon>
                   </v-btn>
                 </template>
@@ -67,23 +68,62 @@
               </v-tooltip>
             </v-col>
             <v-col v-if="isOrganizationAdmin" cols="3">
-              <v-tooltip color="red" bottom>
+              <v-tooltip color="green" bottom>
                 <template #activator="{ on, attrs }">
                   <v-btn
                     block
                     small
-                    color="red"
+                    outlined
+                    color="green"
                     v-bind="attrs"
                     v-on="on"
-                    @click="create_group_dialog = true"
+                    @click="promote_organization_dialog = true"
                   >
                     <v-icon>
-                      mdi-delete
+                      mdi-account-multiple-plus-outline
                     </v-icon>
                   </v-btn>
                 </template>
-                <span>Delete Organization</span>
+                <span>Promote someone Admin of Organization</span>
               </v-tooltip>
+            </v-col>
+            <v-col v-if="isOrganizationAdmin" cols="3">
+              <v-menu
+                nudge-right="-60"
+                nudge-top="-5"
+                offset-y
+              >
+                <template #activator="{ on: onMenu }">
+                  <v-tooltip color="red" bottom>
+                    <template #activator="{ on: onTooltip }">
+                      <v-btn
+                        block
+                        small
+                        outlined
+                        color="red"
+                        v-on="{ ...onMenu, ...onTooltip }"
+                      >
+                        <v-icon>
+                          mdi-delete
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Delete Organization</span>
+                  </v-tooltip>
+                </template>
+
+                <v-card>
+                  <v-card-actions>
+                    <v-btn
+                      color="red"
+                      outlined
+                      @click="deleteOrganization"
+                    >
+                      Confirm Delete
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-menu>
             </v-col>
             <v-col v-if="isAdmin" cols="3">
               <v-tooltip color="primary" bottom>
@@ -91,6 +131,7 @@
                   <v-btn
                     block
                     small
+                    outlined
                     color="primary"
                     v-bind="attrs"
                     v-on="on"
@@ -129,7 +170,11 @@
       </div>
       <template #append>
         <div class="pa-2">
-          <v-btn block color="red" @click="logout">
+          <v-btn
+            block
+            color="red"
+            @click="logout"
+          >
             <v-icon left>
               mdi-logout
             </v-icon>
@@ -166,7 +211,7 @@
           <v-card-actions>
             <v-spacer />
             <v-btn
-              color="blue darken-1"
+              color="grey"
               text
               @click="create_group_dialog = false"
             >
@@ -177,6 +222,50 @@
               @click="createGroup"
             >
               Create
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="promote_organization_dialog"
+        max-width="400"
+      >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">Organization Administrator</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col
+                  cols="12"
+                >
+                  <v-text-field
+                    v-model="promote_organization_email"
+                    label="Email"
+                    hide-details
+                    required
+                    outlined
+                    @keyup.enter="promoteOrganizationAdmin"
+                  />
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="grey"
+              text
+              @click="promote_organization_dialog = false"
+            >
+              Close
+            </v-btn>
+            <v-btn
+              color="green"
+              @click="promoteOrganizationAdmin"
+            >
+              Promote
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -210,7 +299,7 @@
           <v-card-actions>
             <v-spacer />
             <v-btn
-              color="blue darken-1"
+              color="grey"
               text
               @click="create_organization_dialog = false"
             >
@@ -240,6 +329,8 @@ export default {
       organizations: [],
       organization_name: '',
       create_organization_dialog: false,
+      promote_organization_dialog: false,
+      promote_organization_email: '',
       selected_organization: null,
       selected_organization_admins: [],
       groups: [],
@@ -281,6 +372,22 @@ export default {
         this.organization_name = ''
         this.$fetch()
       })
+    },
+    promoteOrganizationAdmin () {
+      this.$axios.post(`/organizations/${this.selected_organization}/promote`, {
+        mail: this.promote_organization_email
+      }).then(() => {
+        this.promote_organization_dialog = false
+        this.promote_organization_email = ''
+        this.$fetch()
+      })
+    },
+    deleteOrganization () {
+      this.$axios.delete(`/organizations/${this.selected_organization}`)
+        .then(() => {
+          this.selected_organization = null
+          this.$fetch()
+        })
     },
     getOrganizationGroups () {
       this.groups_loading = true
