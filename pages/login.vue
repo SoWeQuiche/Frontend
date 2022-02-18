@@ -29,7 +29,7 @@
           <v-btn class="ml-3" color="primary" :loading="loading" @click="login">
             Login
           </v-btn>
-          <v-btn class="ml-3" color="white" :loading="loading" @click="loginApple">
+          <v-btn class="ml-3" color="white" :loading="loading_apple" light @click="loginApple">
             <v-icon color="black">
               mdi-apple
             </v-icon>
@@ -48,7 +48,8 @@ export default {
     return {
       email: '',
       password: '',
-      loading: false
+      loading: false,
+      loading_apple: false
     }
   },
   head () {
@@ -92,11 +93,16 @@ export default {
       this.loading = false
     },
     async loginApple () {
+      if (this.loading_apple) { return }
+      this.loading_apple = true
+
       try {
         // eslint-disable-next-line no-undef
         const data = await AppleID.auth.signIn()
         await this.$auth.loginWith('apple', { data })
       } catch (error) {}
+
+      this.loading_apple = false
     }
   }
 }
