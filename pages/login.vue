@@ -9,6 +9,7 @@
             outlined
             hide-details
             label="Email"
+            type="email"
             @keyup.enter="login"
           />
         </v-col>
@@ -87,7 +88,6 @@ export default {
 
       try {
         await this.$auth.loginWith('local', { data: { mail: this.email, password: this.password } })
-        await this.$router.push('/')
       } catch (err) {}
 
       this.loading = false

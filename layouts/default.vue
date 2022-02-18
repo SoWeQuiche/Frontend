@@ -40,7 +40,7 @@
                 dense
                 :loading="$fetchState.pending"
                 no-data-text="You are not part of an organization"
-                @change="getOrganizationGroups"
+                @change="getOrganizationData"
               />
             </v-col>
           </v-row>
@@ -345,7 +345,7 @@ export default {
       .then(({ data }) => {
         this.organizations = data
         if (!this.selected_organization) { this.selected_organization = data[0]._id }
-        this.getOrganizationGroups()
+        this.getOrganizationData()
       })
   },
   computed: {
@@ -389,13 +389,22 @@ export default {
           this.$fetch()
         })
     },
-    getOrganizationGroups () {
+    getOrganizationData () {
       this.groups_loading = true
+      this.selected_organization_admins = []
       this.groups = []
+
       this.$axios.get(`/organizations/${this.selected_organization}`)
         .then(({ data }) => {
-          this.groups = data.groups
           this.selected_organization_admins = data.admins
+        })
+        .finally(() => {
+          this.groups_loading = false
+        })
+
+      this.$axios.get(`/groups/organization/${this.selected_organization}`)
+        .then(({ data }) => {
+          this.groups = data
         })
         .finally(() => {
           this.groups_loading = false
@@ -407,7 +416,7 @@ export default {
         name: this.group_name
       }).then(() => {
         this.create_group_dialog = false
-        this.getOrganizationGroups()
+        this.getOrganizationData()
       })
     }
   }
