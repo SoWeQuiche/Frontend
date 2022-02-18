@@ -62,7 +62,7 @@ export default {
       meta: [
         {
           name: 'appleid-signin-client-id',
-          content: 'com.maxencemottard.swq.swa'
+          content: this.$config.APPLE_CLIENT_ID
         },
         {
           name: 'appleid-signin-scope',
@@ -70,7 +70,7 @@ export default {
         },
         {
           name: 'appleid-signin-redirect-uri',
-          content: 'https://sowequiches.loca.lt/login'
+          content: this.$config.APPLE_REDIRECT_URI
         },
         {
           name: 'appleid-signin-use-popup',
