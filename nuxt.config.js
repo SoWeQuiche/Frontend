@@ -61,7 +61,9 @@ export default {
   publicRuntimeConfig: {
     axios: {
       browserBaseURL: process.env.BROWSER_BASE_URL
-    }
+    },
+    APPLE_CLIENT_ID: process.env.APPLE_CLIENT_ID || 'com.maxencemottard.swq.swa',
+    APPLE_REDIRECT_URI: process.env.APPLE_REDIRECT_URI || 'https://sowequiches.loca.lt/login'
   },
 
   privateRuntimeConfig: {
@@ -85,7 +87,23 @@ export default {
           logout: false,
           user: { url: '/auth/me', method: 'get' }
         }
+      },
+      apple: {
+        scheme: 'local',
+        token: {
+          property: 'token',
+          global: true
+        },
+        user: {
+          property: false
+        },
+        endpoints: {
+          login: { url: '/auth/login/apple-id', method: 'post' },
+          logout: false,
+          user: { url: '/auth/me', method: 'get' }
+        }
       }
+
     }
   },
 
