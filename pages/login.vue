@@ -29,6 +29,11 @@
           <v-btn class="ml-3" color="primary" :loading="loading" @click="login">
             Login
           </v-btn>
+          <v-btn class="ml-3" color="white" :loading="loading" @click="loginApple">
+            <v-icon color="black">
+              mdi-apple
+            </v-icon>
+          </v-btn>
         </v-col>
       </v-row>
     </v-card-text>
@@ -48,7 +53,30 @@ export default {
   },
   head () {
     return {
-      title: 'Login'
+      title: 'Login',
+      script: [
+        {
+          src: 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js'
+        }
+      ],
+      meta: [
+        {
+          name: 'appleid-signin-client-id',
+          content: 'com.maxencemottard.swq.swa'
+        },
+        {
+          name: 'appleid-signin-scope',
+          content: 'name email'
+        },
+        {
+          name: 'appleid-signin-redirect-uri',
+          content: 'https://sowequiches.loca.lt/login'
+        },
+        {
+          name: 'appleid-signin-use-popup',
+          content: true
+        }
+      ]
     }
   },
   methods: {
@@ -62,6 +90,13 @@ export default {
       } catch (err) {}
 
       this.loading = false
+    },
+    async loginApple () {
+      try {
+        // eslint-disable-next-line no-undef
+        const data = await AppleID.auth.signIn()
+        await this.$auth.loginWith('apple', { data })
+      } catch (error) {}
     }
   }
 }

@@ -85,7 +85,23 @@ export default {
           logout: false,
           user: { url: '/auth/me', method: 'get' }
         }
+      },
+      apple: {
+        scheme: 'local',
+        token: {
+          property: 'token',
+          global: true
+        },
+        user: {
+          property: false
+        },
+        endpoints: {
+          login: { url: '/auth/login/apple-id', method: 'post' },
+          logout: false,
+          user: { url: '/auth/me', method: 'get' }
+        }
       }
+
     }
   },
 
