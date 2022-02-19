@@ -1,10 +1,18 @@
 <template>
   <v-app dark>
-    <v-app-bar fixed app>
-      <v-app-bar-nav-icon @click="organization_drawer = !organization_drawer" />
-    </v-app-bar>
+    <v-btn
+      small
+      fab
+      fixed
+      top
+      left
+      color="primary"
+      @click="organization_drawer = !organization_drawer"
+    >
+      <v-icon>mdi-menu</v-icon>
+    </v-btn>
     <v-main>
-      <v-container>
+      <v-container fluid>
         <Nuxt />
       </v-container>
     </v-main>
@@ -14,8 +22,8 @@
     <v-navigation-drawer
       v-model="organization_drawer"
       width="300"
-      absolute
       temporary
+      fixed
     >
       <v-list>
         <v-list-item>
@@ -87,7 +95,7 @@
                 <span>Promote someone Admin of Organization</span>
               </v-tooltip>
             </v-col>
-            <v-col v-if="isOrganizationAdmin" cols="3">
+            <v-col v-if="isAdmin" cols="3">
               <v-menu
                 nudge-right="-60"
                 nudge-top="-5"
@@ -154,7 +162,8 @@
           v-for="group in groups"
           :key="group._id"
           color="primary"
-          @click="logout"
+          link
+          :to="{ name: 'groups-groupId-sessionId', params: { groupId: group._id, sessionId: group._id } }"
         >
           <v-list-item-icon>
             <v-icon>
@@ -169,18 +178,28 @@
         <v-progress-circular v-else indeterminate />
       </div>
       <template #append>
-        <div class="pa-2">
-          <v-btn
-            block
-            color="red"
-            @click="logout"
-          >
-            <v-icon left>
-              mdi-logout
-            </v-icon>
-            Disconnect
-          </v-btn>
-        </div>
+        <v-row class="pa-2">
+          <v-col cols="3">
+            <v-btn outlined @click="$vuetify.theme.dark = !$vuetify.theme.dark">
+              <v-icon>
+                mdi-brightness-6
+              </v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="9">
+            <v-btn
+              block
+              dark
+              color="red"
+              @click="logout"
+            >
+              <v-icon left>
+                mdi-logout
+              </v-icon>
+              Disconnect
+            </v-btn>
+          </v-col>
+        </v-row>
       </template>
       <v-dialog
         v-model="create_group_dialog"
@@ -325,7 +344,7 @@ export default {
   fetchOnServer: false,
   data () {
     return {
-      organization_drawer: true,
+      organization_drawer: false,
       organizations: [],
       organization_name: '',
       create_organization_dialog: false,
