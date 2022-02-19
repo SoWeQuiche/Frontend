@@ -412,7 +412,7 @@ export default {
     },
     createGroup () {
       this.groups = []
-      this.$axios.post(`/organizations/${this.selected_organization}/groups`, {
+      this.$axios.post(`/groups/organization/${this.selected_organization}`, {
         name: this.group_name
       }).then(() => {
         this.create_group_dialog = false
