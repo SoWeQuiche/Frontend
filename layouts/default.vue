@@ -97,7 +97,7 @@
             </v-col>
             <v-col v-if="isAdmin" cols="3">
               <v-menu
-                nudge-right="-60"
+                nudge-right="-72"
                 nudge-top="-5"
                 offset-y
               >
@@ -124,9 +124,12 @@
                   <v-card-actions>
                     <v-btn
                       color="red"
-                      outlined
+                      dark
                       @click="deleteOrganization"
                     >
+                      <v-icon left>
+                        mdi-alert-outline
+                      </v-icon>
                       Confirm Delete
                     </v-btn>
                   </v-card-actions>
@@ -163,7 +166,7 @@
           :key="group._id"
           color="primary"
           link
-          :to="{ name: 'groups-groupId-sessionId', params: { groupId: group._id, sessionId: group._id } }"
+          :to="{ name: 'groups-uid', params: { uid: group._id } }"
         >
           <v-list-item-icon>
             <v-icon>

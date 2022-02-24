@@ -2,7 +2,7 @@
   <v-row>
     <v-col cols="12" class="pl-12 pr-6 py-2 d-flex justify-center justify-sm-space-between align-center">
       <v-breadcrumbs v-if="!isMobile" :items="breadcrumbs" class="d-inline-block" />
-      <div style="min-width: 200px">
+      <div style="min-width: 200px;">
         <span class="grey--text">Time Left:</span>
         <span class="pl-1 text-h6">{{ time_left }}</span>
       </div>
@@ -88,7 +88,10 @@
       </div>
     </v-col>
     <v-col cols="12">
-      <v-row class="d-flex reverse">
+      <v-row class="d-flex">
+        <v-col v-if="$fetchState.pending" cols="12" class="text-center">
+          <v-progress-circular size="64" indeterminate />
+        </v-col>
         <v-col :cols="usersDisplaySize.global.cols" :md="usersDisplaySize.global.md" :lg="usersDisplaySize.global.lg">
           <v-row>
             <v-col
@@ -171,7 +174,7 @@
             <div class="text-h4 mb-4">
               Session Code
             </div>
-            <div class="text-h1" style="letter-spacing: 10px !important;">
+            <div class="text-h2" style="letter-spacing: 10px !important;">
               {{ session_code }}
             </div>
           </v-card>
@@ -315,7 +318,7 @@ export default {
           to: '/'
         },
         {
-          text: 'Group ' + this.$route.params.groupId,
+          text: `Group - ${this.$route.params.groupId}`,
           link: true,
           exact: true,
           to: {
@@ -326,7 +329,7 @@ export default {
           }
         },
         {
-          text: 'Session ' + this.$route.params.sessionId
+          text: `Session - ${this.$route.params.sessionId}`
         }
       ]
     }
@@ -336,7 +339,7 @@ export default {
       const randomNumber = Math.floor(Math.random() * 10000)
       this.qr_code_data = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQ${randomNumber}`
       this.updateQrCodeThrottle()
-    }, 1000)
+    }, 5000)
 
     this.time_left_interval = setInterval(() => {
       this.updateTimeLeft()

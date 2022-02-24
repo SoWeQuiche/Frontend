@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" max-width="500">
+  <v-card class="mx-auto" outlined max-width="500">
     <v-card-title>Login to SoWeQuiches</v-card-title>
     <v-card-text>
       <v-row>
@@ -30,8 +30,8 @@
           <v-btn class="ml-3" color="primary" :loading="loading" @click="login">
             Login
           </v-btn>
-          <v-btn class="ml-3" color="white" :loading="loading_apple" light @click="loginApple">
-            <v-icon color="black">
+          <v-btn class="ml-3" :color="$vuetify.theme.dark ? 'white' : 'black'" :loading="loading_apple" @click="loginApple">
+            <v-icon :color="$vuetify.theme.dark ? 'black' : 'white'">
               mdi-apple
             </v-icon>
           </v-btn>
