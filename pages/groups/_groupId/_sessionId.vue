@@ -2,7 +2,16 @@
   <v-row>
     <v-col cols="12" class="pl-12 pr-6 py-2 d-flex justify-center justify-sm-space-between align-center">
       <v-breadcrumbs v-if="!isMobile" :items="breadcrumbs" class="d-inline-block" />
-      <div style="min-width: 200px;">
+      <v-card v-else outlined width="70vw" class="mb-4">
+        <v-card-title class="text-center" style="word-break: break-word;">
+          {{ mobileTitle }}
+        </v-card-title>
+        <v-card-subtitle class="text-center mt-2">
+          <span class="grey--text">Time Left:</span>
+          <span class="pl-1 text-h6">{{ time_left }}</span>
+        </v-card-subtitle>
+      </v-card>
+      <div v-if="!isMobile" style="min-width: 200px;">
         <span class="grey--text">Time Left:</span>
         <span class="pl-1 text-h6">{{ time_left }}</span>
       </div>
@@ -212,14 +221,17 @@ export default {
   },
   data () {
     return {
+      session: {
+        day: '',
+        from_time: '',
+        to_time: ''
+      },
       users: [],
       sign_mode: 'none',
       session_code: '000000',
-      session_end: moment().add(10, 'hours').toDate(),
       qr_code_data: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
       qr_code_interval: undefined,
-      time_left: '00:00:00',
-      time_left_interval: undefined
+      time_left: '00:00:00'
     }
   },
   async fetch () {
@@ -235,11 +247,19 @@ export default {
         }))
       })
 
+    const { data: session } = await this.$axios.get(`/timeslots/${this.uid}`)
+    this.session = session
+    this.session.day = moment(session.day).format('dddd Do MMMM YYYY')
+    this.session.from_time = moment(session.startDate).format('HH:mm')
+    this.session.to_time = moment(session.endDate).format('HH:mm')
+
+    this.updateTimeLeft()
+
     await this.fetchGroup(this.$route.params.groupId)
   },
   head () {
     return {
-      title: 'Group ' + this.uid
+      title: `Group - ${this.selected_group.name}, Session - ${this.session.day} from ${this.session.from_time} to ${this.session.to_time}`
     }
   },
   computed: {
@@ -325,6 +345,9 @@ export default {
           return { }
       }
     },
+    mobileTitle () {
+      return `${this.session.day} from ${this.session.from_time} to ${this.session.to_time}`
+    },
     breadcrumbs () {
       return [
         {
@@ -343,7 +366,7 @@ export default {
           }
         },
         {
-          text: `Session - ${this.$route.params.sessionId}`
+          text: `Session - ${this.session.day} from ${this.session.from_time} to ${this.session.to_time}`
         }
       ]
     }
@@ -355,15 +378,10 @@ export default {
       this.updateQrCodeThrottle()
     }, 5000)
 
-    this.time_left_interval = setInterval(() => {
-      this.updateTimeLeft()
-    }, 1000)
-
     this.updateTimeLeft()
   },
   beforeDestroy () {
     clearInterval(this.qr_code_interval)
-    clearInterval(this.time_left_interval)
   },
   methods: {
     ...mapActions('groups', [
@@ -386,16 +404,19 @@ export default {
       })
     },
     updateTimeLeft () {
-      const duration = moment(this.session_end).diff(moment(), 'seconds')
+      const duration = moment(this.session.endDate).diff(moment(), 'seconds')
       if (duration > 0) {
         const hours = Math.floor(duration / 3600)
         const minutes = Math.floor((duration - hours * 3600) / 60)
         const seconds = duration - hours * 3600 - minutes * 60
 
         this.time_left = `${addZero(hours)}h ${addZero(minutes)}m ${addZero(seconds)}s`
+
+        setTimeout(() => {
+          this.updateTimeLeft()
+        }, 1000)
       } else {
-        this.time_left = '00h 00m 00s'
-        clearInterval(this.time_left_interval)
+        this.time_left = 'Session Ended'
       }
     },
     makeAllPresent () {
