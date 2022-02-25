@@ -1,10 +1,8 @@
 <template>
-  <v-col cols="12" md="6" lg="4" xl="3">
+  <v-col cols="12" md="6" lg="4" xl="3" :class="{ 'hoverScale': hasLink, 'defaultCursor': !hasLink }">
     <v-card
-      class="hoverScale"
       outlined
-      link
-      :to="{ name: 'groups-groupId-sessionId', params: { groupId: selectedGroup._id, sessionId: session._id } }"
+      :to="redirectTo"
       :color="session.status | cardColor"
       @contextmenu.stop.prevent="showMenu"
     >
@@ -128,6 +126,16 @@ export default {
       }
     }
   },
+  computed: {
+    hasLink () {
+      return this.session.status !== 'coming'
+    },
+    redirectTo () {
+      if (this.session.status === 'coming') { return undefined }
+
+      return { name: 'groups-groupId-sessionId', params: { groupId: this.selectedGroup._id, sessionId: this.session._id } }
+    }
+  },
   methods: {
     showMenu (e) {
       this.menu.show = true
@@ -146,5 +154,15 @@ export default {
 </script>
 
 <style scoped>
+.defaultCursor {
+  cursor: default;
+}
 
+.hoverScale {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.hoverScale:hover {
+  transform: scale(1.05);
+}
 </style>

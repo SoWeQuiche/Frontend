@@ -91,7 +91,6 @@
                       <session-card
                         v-for="session in groupSessions.signing"
                         :key="session._id"
-                        class="hoverScale"
                         :session="session"
                         :selected-group="selected_group"
                         @delete="deleteSession"
@@ -111,7 +110,6 @@
                       <session-card
                         v-for="session in groupSessions.coming"
                         :key="session._id"
-                        class="hoverScale"
                         :session="session"
                         :selected-group="selected_group"
                         @delete="deleteSession"
@@ -131,7 +129,6 @@
                       <session-card
                         v-for="session in groupSessions.passed"
                         :key="session._id"
-                        class="hoverScale"
                         :session="session"
                         :selected-group="selected_group"
                         @delete="deleteSession"
@@ -509,11 +506,5 @@ export default {
 </script>
 
 <style scoped>
-.hoverScale {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
 
-.hoverScale:hover {
-  transform: scale(1.05);
-}
 </style>
