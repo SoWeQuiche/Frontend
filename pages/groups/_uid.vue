@@ -67,7 +67,7 @@
       <v-container>
         <v-row>
           <v-col cols="12">
-            <v-expansion-panels v-model="session_groups_panels" flat multiple mandatory>
+            <v-expansion-panels v-model="session_groups_panels" flat mandatory>
               <v-expansion-panel class="transparent">
                 <v-card outlined :loading="$fetchState.pending">
                   <v-expansion-panel-header>Active Session</v-expansion-panel-header>

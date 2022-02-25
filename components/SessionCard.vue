@@ -27,18 +27,22 @@
         </v-tooltip>
       </v-list-item>
 
-      <v-card-text class="pt-0">
-        <v-chip color="grey darken-2" dark>
-          {{ session.day }}
-        </v-chip>
-        <span class="mx-1">from</span>
-        <v-chip color="grey darken-2" dark>
-          {{ session.from_time }}
-        </v-chip>
-        <span class="mx-1">to</span>
-        <v-chip color="grey darken-2" dark>
-          {{ session.to_time }}
-        </v-chip>
+      <v-card-text class="pt-0 d-flex flex-column flex-sm-row align-center">
+        <div>
+          <v-chip color="grey darken-2" dark>
+            {{ session.day }}
+          </v-chip>
+          <span class="mx-1">from</span>
+        </div>
+        <div class="mt-2 mt-sm-0">
+          <v-chip color="grey darken-2" dark>
+            {{ session.from_time }}
+          </v-chip>
+          <span class="mx-1">to</span>
+          <v-chip color="grey darken-2" dark>
+            {{ session.to_time }}
+          </v-chip>
+        </div>
       </v-card-text>
     </v-card>
   </v-col>
