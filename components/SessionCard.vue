@@ -139,10 +139,7 @@ export default {
       })
     },
     deleteSession () {
-      this.$axios.delete(`/timeslots/${this.session._id}`)
-        .then(() => {
-          this.$emit('delete', this.session._id)
-        })
+      this.$emit('delete', this.session._id)
     }
   }
 }

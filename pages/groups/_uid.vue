@@ -94,7 +94,7 @@
                         class="hoverScale"
                         :session="session"
                         :selected-group="selected_group"
-                        @delete="fetchSessions"
+                        @delete="deleteSession"
                       />
                       <v-col v-if="!$fetchState.pending && !groupSessions.signing.length" class="grey--text">
                         No active sessions
@@ -114,7 +114,7 @@
                         class="hoverScale"
                         :session="session"
                         :selected-group="selected_group"
-                        @delete="fetchSessions"
+                        @delete="deleteSession"
                       />
                       <v-col v-if="!groupSessions.coming.length" class="grey--text">
                         No coming sessions
@@ -134,7 +134,7 @@
                         class="hoverScale"
                         :session="session"
                         :selected-group="selected_group"
-                        @delete="fetchSessions"
+                        @delete="deleteSession"
                       />
                       <v-col v-if="!groupSessions.passed.length" class="grey--text">
                         No passed sessions
@@ -480,6 +480,12 @@ export default {
           this.create_session_form.from_time = ''
           this.create_session_form.to_time = ''
 
+          this.fetchSessions()
+        })
+    },
+    deleteSession (session) {
+      this.$axios.delete(`/timeslots/${session}`)
+        .then(() => {
           this.fetchSessions()
         })
     },
