@@ -88,7 +88,14 @@
                           />
                         </v-card>
                       </v-col>
-                      <session-card v-for="session in groupSessions.signing" :key="session._id" class="hoverScale" :session="session" :selected-group="selected_group" />
+                      <session-card
+                        v-for="session in groupSessions.signing"
+                        :key="session._id"
+                        class="hoverScale"
+                        :session="session"
+                        :selected-group="selected_group"
+                        @delete="fetchSessions"
+                      />
                       <v-col v-if="!$fetchState.pending && !groupSessions.signing.length" class="grey--text">
                         No active sessions
                       </v-col>
@@ -101,7 +108,14 @@
                   <v-expansion-panel-header>Coming Sessions</v-expansion-panel-header>
                   <v-expansion-panel-content>
                     <v-row>
-                      <session-card v-for="session in groupSessions.coming" :key="session._id" class="hoverScale" :session="session" :selected-group="selected_group" />
+                      <session-card
+                        v-for="session in groupSessions.coming"
+                        :key="session._id"
+                        class="hoverScale"
+                        :session="session"
+                        :selected-group="selected_group"
+                        @delete="fetchSessions"
+                      />
                       <v-col v-if="!groupSessions.coming.length" class="grey--text">
                         No coming sessions
                       </v-col>
@@ -114,7 +128,14 @@
                   <v-expansion-panel-header>Passed Sessions</v-expansion-panel-header>
                   <v-expansion-panel-content>
                     <v-row>
-                      <session-card v-for="session in groupSessions.passed" :key="session._id" class="hoverScale" :session="session" :selected-group="selected_group" />
+                      <session-card
+                        v-for="session in groupSessions.passed"
+                        :key="session._id"
+                        class="hoverScale"
+                        :session="session"
+                        :selected-group="selected_group"
+                        @delete="fetchSessions"
+                      />
                       <v-col v-if="!groupSessions.passed.length" class="grey--text">
                         No passed sessions
                       </v-col>

@@ -6,6 +6,7 @@
       link
       :to="{ name: 'groups-groupId-sessionId', params: { groupId: selectedGroup._id, sessionId: session._id } }"
       :color="session.status | cardColor"
+      @contextmenu.stop.prevent="showMenu"
     >
       <v-list-item three-line>
         <v-list-item-content>
@@ -45,6 +46,25 @@
         </div>
       </v-card-text>
     </v-card>
+
+    <v-menu
+      v-model="menu.show"
+      :position-x="menu.x"
+      :position-y="menu.y"
+      absolute
+      offset-y
+    >
+      <v-list>
+        <v-list-item>
+          <v-btn outlined color="red" @click="deleteSession">
+            <v-icon left>
+              mdi-delete
+            </v-icon>
+            Delete
+          </v-btn>
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </v-col>
 </template>
 
@@ -109,6 +129,32 @@ export default {
     selectedGroup: {
       type: Object,
       required: true
+    }
+  },
+  data () {
+    return {
+      menu: {
+        show: false,
+        x: 0,
+        y: 0
+      }
+    }
+  },
+  methods: {
+    showMenu (e) {
+      this.menu.show = true
+      this.menu.x = e.clientX
+      this.menu.y = e.clientY
+
+      this.$nextTick(() => {
+        this.menu.show = true
+      })
+    },
+    deleteSession () {
+      this.$axios.delete(`/timeslots/${this.session._id}`)
+        .then(() => {
+          this.$emit('delete', this.session._id)
+        })
     }
   }
 }
