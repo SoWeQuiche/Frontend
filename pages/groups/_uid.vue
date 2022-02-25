@@ -7,7 +7,9 @@
       <v-col v-if="isOrganizationAdmin" cols="12" class="text-center">
         <v-card class="d-inline-block">
           <v-card-title class="d-flex justify-center">
-            <div>Administration Panel</div>
+            <div class="text-h4">
+              Administration Panel
+            </div>
           </v-card-title>
 
           <v-card-actions class="d-flex flex-column flex-sm-row">
@@ -61,61 +63,66 @@
         </v-card>
       </v-col>
     </v-expand-transition>
-    <v-col v-if="$fetchState.pending" cols="12" class="text-center">
-      <v-progress-circular :size="50" indeterminate />
-    </v-col>
     <v-col cols="12">
       <v-container>
         <v-row>
-          <v-col
-            v-for="session in sortedSessions"
-            :key="session._id"
-            cols="12"
-            md="6"
-            lg="4"
-            xl="3"
-          >
-            <v-card
-              class="hoverScale"
-              outlined
-              link
-              :to="{ name: 'groups-groupId-sessionId', params: { groupId: uid, sessionId: uid } }"
-              :color="session.status | cardColor"
-            >
-              <v-list-item three-line>
-                <v-list-item-content>
-                  <v-list-item-title class="text-h5 mb-1">
-                    {{ selected_group.name }}
-                  </v-list-item-title>
-                  <v-list-item-subtitle />
-                </v-list-item-content>
-
-                <v-tooltip :color="session.status | cardIconColor" left>
-                  <template #activator="{ on, attrs }">
-                    <v-list-item-avatar tile size="64" v-bind="attrs" v-on="on">
-                      <v-icon :color="session.status | cardIconColor" large>
-                        {{ session.status | cardIcon }}
-                      </v-icon>
-                    </v-list-item-avatar>
-                  </template>
-                  <span>{{ session.status | cardIconDescription }}</span>
-                </v-tooltip>
-              </v-list-item>
-
-              <v-card-text class="pt-0">
-                <v-chip color="grey darken-2" dark>
-                  {{ session.day }}
-                </v-chip>
-                <span class="mx-1">from</span>
-                <v-chip color="grey darken-2" dark>
-                  {{ session.from_time }}
-                </v-chip>
-                <span class="mx-1">to</span>
-                <v-chip color="grey darken-2" dark>
-                  {{ session.to_time }}
-                </v-chip>
-              </v-card-text>
-            </v-card>
+          <v-col cols="12">
+            <v-expansion-panels v-model="session_groups_panels" flat multiple mandatory>
+              <v-expansion-panel class="transparent">
+                <v-card outlined :loading="$fetchState.pending">
+                  <v-expansion-panel-header>Active Session</v-expansion-panel-header>
+                  <v-expansion-panel-content>
+                    <v-row>
+                      <v-col
+                        v-for="index in $fetchState.pending && !groupSessions.signing.length ? [0, 1] : []"
+                        :key="index"
+                        cols="12"
+                        md="6"
+                        lg="4"
+                        xl="3"
+                      >
+                        <v-card outlined>
+                          <v-skeleton-loader
+                            type="card-heading, list-item-three-line"
+                            height="144"
+                          />
+                        </v-card>
+                      </v-col>
+                      <session-card v-for="session in groupSessions.signing" :key="session._id" class="hoverScale" :session="session" :selected-group="selected_group" />
+                      <v-col v-if="!$fetchState.pending && !groupSessions.signing.length" class="grey--text">
+                        No active sessions
+                      </v-col>
+                    </v-row>
+                  </v-expansion-panel-content>
+                </v-card>
+              </v-expansion-panel>
+              <v-expansion-panel class="transparent">
+                <v-card outlined class="my-2">
+                  <v-expansion-panel-header>Coming Sessions</v-expansion-panel-header>
+                  <v-expansion-panel-content>
+                    <v-row>
+                      <session-card v-for="session in groupSessions.coming" :key="session._id" class="hoverScale" :session="session" :selected-group="selected_group" />
+                      <v-col v-if="!groupSessions.coming.length" class="grey--text">
+                        No coming sessions
+                      </v-col>
+                    </v-row>
+                  </v-expansion-panel-content>
+                </v-card>
+              </v-expansion-panel>
+              <v-expansion-panel class="transparent">
+                <v-card outlined>
+                  <v-expansion-panel-header>Passed Sessions</v-expansion-panel-header>
+                  <v-expansion-panel-content>
+                    <v-row>
+                      <session-card v-for="session in groupSessions.passed" :key="session._id" class="hoverScale" :session="session" :selected-group="selected_group" />
+                      <v-col v-if="!groupSessions.passed.length" class="grey--text">
+                        No passed sessions
+                      </v-col>
+                    </v-row>
+                  </v-expansion-panel-content>
+                </v-card>
+              </v-expansion-panel>
+            </v-expansion-panels>
           </v-col>
         </v-row>
       </v-container>
@@ -379,6 +386,7 @@ export default {
   data () {
     return {
       sessions: [],
+      session_groups_panels: [0],
       create_session_dialog: false,
       create_session_dates_menu: false,
       create_session_from_time_menu: false,
@@ -439,6 +447,19 @@ export default {
     },
     sortedSessions () {
       return Array.from(this.sessions).sort((a, b) => moment(b.startDate).unix() - moment(a.startDate).unix())
+    },
+    groupSessions () {
+      const types = {
+        signing: [],
+        coming: [],
+        passed: []
+      }
+
+      this.sortedSessions.forEach((session) => {
+        types[session.status].push(session)
+      })
+
+      return types
     }
   },
   methods: {
