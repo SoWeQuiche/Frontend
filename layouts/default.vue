@@ -38,17 +38,17 @@
           <v-row class="d-flex justify-center">
             <v-col cols="12">
               <v-select
-                v-model="selected_organization"
                 item-text="name"
                 item-value="_id"
                 :items="organizations"
+                :value="selected_organization._id"
                 label="Organization"
                 hide-details
                 outlined
                 dense
                 :loading="$fetchState.pending"
                 no-data-text="You are not part of an organization"
-                @change="getOrganizationData"
+                @change="setSelectedOrganization"
               />
             </v-col>
           </v-row>
@@ -341,6 +341,8 @@
 </template>
 
 <script>
+import { mapActions, mapMutations, mapState } from 'vuex'
+
 export default {
   name: 'DefaultLayout',
   middleware: 'auth',
@@ -348,29 +350,29 @@ export default {
   data () {
     return {
       organization_drawer: false,
-      organizations: [],
       organization_name: '',
       create_organization_dialog: false,
       promote_organization_dialog: false,
       promote_organization_email: '',
-      selected_organization: null,
-      selected_organization_admins: [],
-      groups: [],
       group_name: '',
-      groups_loading: false,
       selected_group: 1,
       create_group_dialog: false
     }
   },
-  fetch () {
-    this.$axios.get('/organizations')
-      .then(({ data }) => {
-        this.organizations = data
-        if (!this.selected_organization) { this.selected_organization = data[0]._id }
-        this.getOrganizationData()
-      })
+  async fetch () {
+    await this.fetchOrganizations()
+    await this.fetchGroups()
   },
   computed: {
+    ...mapState('organizations', {
+      organizations: state => state.organizations,
+      selected_organization: state => state.selected_organization,
+      selected_organization_admins: state => state.selected_organization_admins
+    }),
+    ...mapState('groups', {
+      groups: state => state.groups,
+      groups_loading: state => state.loading
+    }),
     user () {
       return this.$auth.user
     },
@@ -378,10 +380,20 @@ export default {
       return this.user.isAdmin
     },
     isOrganizationAdmin () {
-      return this.isAdmin || this.selected_organization_admins.includes(this.user._id)
+      return this.isAdmin || this.selected_organization_admins.find(admins => admins._id === this.user._id)
     }
   },
   methods: {
+    ...mapActions('organizations', [
+      'fetchOrganizations',
+      'fetchOrganizationAdmins'
+    ]),
+    ...mapActions('groups', [
+      'fetchGroups'
+    ]),
+    ...mapMutations('organizations', [
+      'setSelectedOrganizationById'
+    ]),
     logout () {
       this.$auth.logout()
       this.$router.push('/login')
@@ -396,7 +408,7 @@ export default {
       })
     },
     promoteOrganizationAdmin () {
-      this.$axios.post(`/organizations/${this.selected_organization}/promote`, {
+      this.$axios.post(`/organizations/${this.selected_organization._id}/promote`, {
         mail: this.promote_organization_email
       }).then(() => {
         this.promote_organization_dialog = false
@@ -405,41 +417,24 @@ export default {
       })
     },
     deleteOrganization () {
-      this.$axios.delete(`/organizations/${this.selected_organization}`)
+      this.$axios.delete(`/organizations/${this.selected_organization._id}`)
         .then(() => {
           this.selected_organization = null
           this.$fetch()
         })
     },
-    getOrganizationData () {
-      this.groups_loading = true
-      this.selected_organization_admins = []
-      this.groups = []
-
-      this.$axios.get(`/organizations/${this.selected_organization}`)
-        .then(({ data }) => {
-          this.selected_organization_admins = data.admins
-        })
-        .finally(() => {
-          this.groups_loading = false
-        })
-
-      this.$axios.get(`/groups/organization/${this.selected_organization}`)
-        .then(({ data }) => {
-          this.groups = data
-        })
-        .finally(() => {
-          this.groups_loading = false
-        })
-    },
     createGroup () {
-      this.groups = []
-      this.$axios.post(`/groups/organization/${this.selected_organization}`, {
+      this.$axios.post(`/groups/organization/${this.selected_organization._id}`, {
         name: this.group_name
       }).then(() => {
         this.create_group_dialog = false
-        this.getOrganizationData()
+        this.fetchGroups()
       })
+    },
+    setSelectedOrganization (organization) {
+      this.setSelectedOrganizationById(organization)
+      this.fetchOrganizationAdmins()
+      this.fetchGroups()
     }
   }
 }

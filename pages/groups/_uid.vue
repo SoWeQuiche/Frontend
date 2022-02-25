@@ -322,6 +322,7 @@
 
 <script>
 import moment from 'moment'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'GroupPage',
@@ -441,6 +442,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions('groups', [
+      'fetchGroups'
+    ]),
     async fetchSessions () {
       const { data: sessions } = await this.$axios.get(`/timeslots/group/${this.uid}`)
       this.sessions = sessions
@@ -486,6 +490,7 @@ export default {
     deleteGroup () {
       this.$axios.delete(`/groups/${this.uid}`)
         .then(() => {
+          this.fetchGroups()
           this.$router.push('/')
         })
     },
