@@ -73,52 +73,40 @@ export default {
   name: 'SessionCard',
   filters: {
     cardColor (status) {
-      switch (status) {
-        case 'signing':
-          return '#2196F333'
-        case 'coming':
-          return '#00968833'
-        case 'passed':
-          return '#42424233'
-        default:
-          return ''
+      const returnColor = {
+        signing: '#2196F333',
+        coming: '#00968833',
+        passed: '#42424233'
       }
+
+      return returnColor[status] || ''
     },
     cardIcon (status) {
-      switch (status) {
-        case 'signing':
-          return 'mdi-draw'
-        case 'coming':
-          return 'mdi-clock-outline'
-        case 'passed':
-          return 'mdi-progress-clock'
-        default:
-          return ''
+      const returnIcon = {
+        signing: 'mdi-draw',
+        coming: 'mdi-clock-outline',
+        passed: 'mdi-progress-clock'
       }
+
+      return returnIcon[status] || ''
     },
     cardIconColor (status) {
-      switch (status) {
-        case 'signing':
-          return 'primary'
-        case 'coming':
-          return 'teal'
-        case 'passed':
-          return 'grey darken-3'
-        default:
-          return ''
+      const returnIconColor = {
+        signing: 'primary',
+        coming: 'teal',
+        passed: 'grey darken-3'
       }
+
+      return returnIconColor[status] || ''
     },
     cardIconDescription (status) {
-      switch (status) {
-        case 'signing':
-          return 'Signing'
-        case 'coming':
-          return 'To come'
-        case 'passed':
-          return 'Ended'
-        default:
-          return ''
+      const returnIconDescription = {
+        signing: 'Signing',
+        coming: 'To come',
+        passed: 'Ended'
       }
+
+      return returnIconDescription[status] || ''
     }
   },
   props: {

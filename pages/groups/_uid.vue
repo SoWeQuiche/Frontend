@@ -354,56 +354,6 @@ import { mapActions, mapState } from 'vuex'
 
 export default {
   name: 'GroupPage',
-  filters: {
-    cardColor (status) {
-      switch (status) {
-        case 'signing':
-          return '#2196F333'
-        case 'coming':
-          return '#00968833'
-        case 'passed':
-          return '#42424233'
-        default:
-          return ''
-      }
-    },
-    cardIcon (status) {
-      switch (status) {
-        case 'signing':
-          return 'mdi-draw'
-        case 'coming':
-          return 'mdi-clock-outline'
-        case 'passed':
-          return 'mdi-progress-clock'
-        default:
-          return ''
-      }
-    },
-    cardIconColor (status) {
-      switch (status) {
-        case 'signing':
-          return 'primary'
-        case 'coming':
-          return 'teal'
-        case 'passed':
-          return 'grey darken-3'
-        default:
-          return ''
-      }
-    },
-    cardIconDescription (status) {
-      switch (status) {
-        case 'signing':
-          return 'Signing'
-        case 'coming':
-          return 'To come'
-        case 'passed':
-          return 'Ended'
-        default:
-          return ''
-      }
-    }
-  },
   data () {
     return {
       sessions: [],
