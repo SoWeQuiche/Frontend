@@ -186,7 +186,7 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import debounce from 'lodash.debounce'
+import { debounce } from 'lodash'
 import moment from 'moment'
 import QRCode from 'qrcode'
 
