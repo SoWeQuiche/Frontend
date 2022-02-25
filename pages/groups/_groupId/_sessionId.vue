@@ -199,7 +199,15 @@ export default {
   name: 'SessionPage',
   filters: {
     presentColor (value) {
-      return value !== null ? value ? '#4CAF5033' : '#F4433633' : ''
+      if (value !== null) {
+        if (value) {
+          return '#4CAF5033'
+        } else {
+          return '#F4433633'
+        }
+      } else {
+        return ''
+      }
     }
   },
   data () {
