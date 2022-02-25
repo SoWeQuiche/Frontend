@@ -85,7 +85,7 @@
               <v-list-item three-line>
                 <v-list-item-content>
                   <v-list-item-title class="text-h5 mb-1">
-                    {{ group.name }}
+                    {{ selected_group.name }}
                   </v-list-item-title>
                   <v-list-item-subtitle />
                 </v-list-item-content>
@@ -322,7 +322,7 @@
 
 <script>
 import moment from 'moment'
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 
 export default {
   name: 'GroupPage',
@@ -396,20 +396,22 @@ export default {
     }
   },
   async fetch () {
-    const { data: group } = await this.$axios.get(`/groups/${this.uid}`)
-    this.group = group
+    await this.fetchGroup(this.uid)
 
-    const { data: organization } = await this.$axios.get(`/organizations/${this.group.organization}`)
+    const { data: organization } = await this.$axios.get(`/organizations/${this.selected_group.organization}`)
     this.organization = organization
 
     await this.fetchSessions()
   },
   head () {
     return {
-      title: `Group - ${this.group.name}`
+      title: `Group - ${this.selected_group.name}`
     }
   },
   computed: {
+    ...mapState('groups', {
+      selected_group: state => state.selected_group
+    }),
     uid () {
       return this.$route.params.uid
     },
@@ -424,7 +426,7 @@ export default {
           to: '/'
         },
         {
-          text: `Group - ${this.group.name}`
+          text: `Group - ${this.selected_group.name}`
         }
       ]
     },
@@ -443,6 +445,7 @@ export default {
   },
   methods: {
     ...mapActions('groups', [
+      'fetchGroup',
       'fetchGroups'
     ]),
     async fetchSessions () {

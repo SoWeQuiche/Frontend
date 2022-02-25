@@ -185,6 +185,7 @@
 </template>
 
 <script>
+import { mapActions, mapState } from 'vuex'
 import debounce from 'lodash.debounce'
 import moment from 'moment'
 import QRCode from 'qrcode'
@@ -213,7 +214,7 @@ export default {
       time_left_interval: null
     }
   },
-  fetch () {
+  async fetch () {
     this.$axios.get('https://randomuser.me/api/?results=20')
       .then(({ data: { results } }) => {
         this.users = results.map(({ login, name, email }) => ({
@@ -225,6 +226,8 @@ export default {
           signed: Math.random() > 0.5
         }))
       })
+
+    await this.fetchGroup(this.$route.params.groupId)
   },
   head () {
     return {
@@ -232,6 +235,9 @@ export default {
     }
   },
   computed: {
+    ...mapState('groups', {
+      selected_group: state => state.selected_group
+    }),
     uid () {
       return this.$route.params.sessionId
     },
@@ -318,7 +324,7 @@ export default {
           to: '/'
         },
         {
-          text: `Group - ${this.$route.params.groupId}`,
+          text: `Group - ${this.selected_group.name}`,
           link: true,
           exact: true,
           to: {
@@ -352,6 +358,9 @@ export default {
     clearInterval(this.time_left_interval)
   },
   methods: {
+    ...mapActions('groups', [
+      'fetchGroup'
+    ]),
     updateQrCodeThrottle: debounce(function () {
       this.updateQRCode()
     }, 20),

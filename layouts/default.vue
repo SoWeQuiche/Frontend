@@ -176,7 +176,7 @@
           <v-list-item-title>{{ group.name }}</v-list-item-title>
         </v-list-item>
       </v-list>
-      <div v-if="!groups.length" class="grey--text text-center">
+      <div v-if="!groups.length || groups_loading" class="grey--text text-center">
         <span v-if="!groups_loading">No group available for tha Organization</span>
         <v-progress-circular v-else indeterminate />
       </div>
@@ -361,6 +361,7 @@ export default {
   },
   async fetch () {
     await this.fetchOrganizations()
+    await this.fetchOrganizationAdmins()
     await this.fetchGroups()
   },
   computed: {
@@ -407,6 +408,13 @@ export default {
         this.$fetch()
       })
     },
+    deleteOrganization () {
+      this.$axios.delete(`/organizations/${this.selected_organization._id}`)
+        .then(() => {
+          this.selected_organization = null
+          this.$fetch()
+        })
+    },
     promoteOrganizationAdmin () {
       this.$axios.post(`/organizations/${this.selected_organization._id}/promote`, {
         mail: this.promote_organization_email
@@ -415,13 +423,6 @@ export default {
         this.promote_organization_email = ''
         this.$fetch()
       })
-    },
-    deleteOrganization () {
-      this.$axios.delete(`/organizations/${this.selected_organization._id}`)
-        .then(() => {
-          this.selected_organization = null
-          this.$fetch()
-        })
     },
     createGroup () {
       this.$axios.post(`/groups/organization/${this.selected_organization._id}`, {
