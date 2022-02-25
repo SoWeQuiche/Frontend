@@ -378,8 +378,6 @@ export default {
   },
   data () {
     return {
-      group: {},
-      organization: {},
       sessions: [],
       create_session_dialog: false,
       create_session_dates_menu: false,
@@ -397,10 +395,7 @@ export default {
   },
   async fetch () {
     await this.fetchGroup(this.uid)
-
-    const { data: organization } = await this.$axios.get(`/organizations/${this.selected_group.organization}`)
-    this.organization = organization
-
+    await this.fetchOrganization(this.selected_group.organization)
     await this.fetchSessions()
   },
   head () {
@@ -409,6 +404,9 @@ export default {
     }
   },
   computed: {
+    ...mapState('organizations', {
+      selected_organization: state => state.selected_organization
+    }),
     ...mapState('groups', {
       selected_group: state => state.selected_group
     }),
@@ -431,7 +429,7 @@ export default {
       ]
     },
     isOrganizationAdmin () {
-      return this.user.isAdmin || (this.organization.admins && this.organization.admins.includes(this.user._id))
+      return this.user.isAdmin || (this.selected_organization.admins && this.selected_organization.admins.includes(this.user._id))
     },
     minDate () {
       return moment().format('YYYY-MM-DD')
@@ -444,6 +442,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions('organizations', [
+      'fetchOrganization'
+    ]),
     ...mapActions('groups', [
       'fetchGroup',
       'fetchGroups'

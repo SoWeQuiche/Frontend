@@ -9,8 +9,13 @@ const state = () => ({
 const getters = {}
 
 const actions = {
-  async fetchGroup ({ commit }, groupId) {
+  async fetchGroup ({ state, commit }, groupId) {
     commit('setLoading', true)
+
+    if (state.selected_group?._id === groupId) {
+      commit('setLoading', false)
+      return
+    }
 
     const group = await this.$axios.$get(`/groups/${groupId}`)
     commit('setSelectedGroup', group)
