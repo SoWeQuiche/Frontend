@@ -217,9 +217,9 @@ export default {
       session_code: '000000',
       session_end: moment().add(10, 'hours').toDate(),
       qr_code_data: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-      qr_code_interval: null,
+      qr_code_interval: undefined,
       time_left: '00:00:00',
-      time_left_interval: null
+      time_left_interval: undefined
     }
   },
   async fetch () {
