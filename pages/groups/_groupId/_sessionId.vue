@@ -8,12 +8,14 @@
         </v-card-title>
         <v-card-subtitle class="text-center mt-2">
           <span class="grey--text">Time Left:</span>
-          <span class="pl-1 text-h6">{{ time_left }}</span>
+          <span v-if="!isTimerEnded" class="pl-1 text-h6">{{ time_left.hours | addZero }}h {{ time_left.minutes | addZero }}m {{ time_left.seconds | addZero }}s</span>
+          <span v-else>Session Ended</span>
         </v-card-subtitle>
       </v-card>
       <div v-if="!isMobile" style="min-width: 200px;">
         <span class="grey--text">Time Left:</span>
-        <span class="pl-1 text-h6">{{ time_left }}</span>
+        <span v-if="!isTimerEnded" class="pl-1 text-h6">{{ time_left.hours | addZero }}h {{ time_left.minutes | addZero }}m {{ time_left.seconds | addZero }}s</span>
+        <span v-else>Session Ended</span>
       </div>
     </v-col>
     <v-col cols="12" class="pl-8 d-flex justify-center justify-md-start align-center flex-column flex-md-row">
@@ -161,15 +163,25 @@
         <v-col
           v-if="sign_mode === 'qrcode'"
           ref="qrcodeCanvasContainer"
-          v-resize="updateQrCodeThrottle"
+          v-resize="windowResize"
           cols="12"
           md="6"
           class="d-flex justify-center"
           order="first"
           order-md="0"
         >
-          <v-avatar rounded size="100%" height="auto" class="align-start">
-            <v-img :src="qr_code_url" class="rounded" contain />
+          <v-avatar
+            rounded
+            size="100%"
+            class="align-start"
+          >
+            <v-img
+              :src="qr_code_url"
+              class="rounded"
+              contain
+              :max-height="qr_code_max_size"
+              :max-width="qr_code_max_size"
+            />
           </v-avatar>
         </v-col>
         <!-- Code Card -->
@@ -201,11 +213,6 @@ import { debounce } from 'lodash'
 import moment from 'moment'
 import QRCode from 'qrcode'
 
-function addZero (i) {
-  if (i < 10) { i = '0' + i }
-  return i
-}
-
 export default {
   name: 'SessionPage',
   filters: {
@@ -213,6 +220,10 @@ export default {
       if (value === null) { return '' }
       if (value) { return '#4CAF5033' }
       return '#F4433633'
+    },
+    addZero (i) {
+      if (i < 10) { i = '0' + i }
+      return i
     }
   },
   data () {
@@ -227,8 +238,13 @@ export default {
       session_code: '000000',
       qr_code_data: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
       qr_code_url: '',
+      qr_code_max_size: 0,
       qr_code_interval: undefined,
-      time_left: '00:00:00'
+      time_left: {
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+      }
     }
   },
   async fetch () {
@@ -345,6 +361,9 @@ export default {
     mobileTitle () {
       return `${this.session.day} from ${this.session.from_time} to ${this.session.to_time}`
     },
+    isTimerEnded () {
+      return this.time_left.hours === 0 && this.time_left.minutes === 0 && this.time_left.seconds === 0
+    },
     breadcrumbs () {
       return [
         {
@@ -372,7 +391,7 @@ export default {
     this.qr_code_interval = setInterval(() => {
       const randomNumber = Math.floor(Math.random() * 10000)
       this.qr_code_data = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQ${randomNumber}`
-      this.updateQrCodeThrottle()
+      this.windowResize()
     }, 5000)
 
     this.updateTimeLeft()
@@ -384,17 +403,21 @@ export default {
     ...mapActions('groups', [
       'fetchGroup'
     ]),
+    windowResize: debounce(function () {
+      if (this.sign_mode === 'qrcode' && this.$refs.qrcodeCanvasContainer) {
+        this.qr_code_max_size = Math.min(this.$refs.qrcodeCanvasContainer.clientWidth - 24, Math.min(window.innerHeight - 400, this.$refs.qrcodeCanvasContainer.clientWidth - 24))
+        this.updateQrCodeThrottle()
+      }
+    }, 20),
     updateQrCodeThrottle: debounce(function () {
       this.updateQRCode()
     }, 100),
     updateQRCode () {
       if (this.sign_mode === 'qrcode' && this.$refs.qrcodeCanvasContainer) {
-        const qrSize = Math.min(this.$refs.qrcodeCanvasContainer.clientWidth - 24, Math.min(window.innerHeight - 400, this.$refs.qrcodeCanvasContainer.clientWidth - 24))
-
         QRCode
           .toDataURL(this.qr_code_data, {
-            width: qrSize,
-            height: qrSize,
+            width: this.qr_code_max_size,
+            height: this.qr_code_max_size,
             margin: 1
           }, (err, url) => {
             if (!err) {
@@ -406,17 +429,17 @@ export default {
     updateTimeLeft () {
       const duration = moment(this.session.endDate).diff(moment(), 'seconds')
       if (duration > 0) {
-        const hours = Math.floor(duration / 3600)
-        const minutes = Math.floor((duration - hours * 3600) / 60)
-        const seconds = duration - hours * 3600 - minutes * 60
+        const timeLeft = moment.duration(duration, 'seconds')
 
-        this.time_left = `${addZero(hours)}h ${addZero(minutes)}m ${addZero(seconds)}s`
+        this.time_left = {
+          hours: timeLeft.hours(),
+          minutes: timeLeft.minutes(),
+          seconds: timeLeft.seconds()
+        }
 
         setTimeout(() => {
           this.updateTimeLeft()
         }, 1000)
-      } else {
-        this.time_left = 'Session Ended'
       }
     },
     makeAllPresent () {

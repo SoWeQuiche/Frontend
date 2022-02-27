@@ -5,7 +5,7 @@
     </v-col>
     <v-expand-transition>
       <v-col v-if="isOrganizationAdmin" cols="12" class="text-center">
-        <v-card class="d-inline-block">
+        <v-card outlined class="d-inline-block">
           <v-card-title class="d-flex justify-center">
             <div class="text-h4">
               Administration Panel
