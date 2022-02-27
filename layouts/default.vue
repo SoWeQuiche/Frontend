@@ -1,10 +1,18 @@
 <template>
   <v-app dark>
-    <v-app-bar fixed app>
-      <v-app-bar-nav-icon @click="organization_drawer = !organization_drawer" />
-    </v-app-bar>
+    <v-btn
+      small
+      fab
+      fixed
+      top
+      left
+      color="primary"
+      @click="organization_drawer = !organization_drawer"
+    >
+      <v-icon>mdi-menu</v-icon>
+    </v-btn>
     <v-main>
-      <v-container>
+      <v-container fluid>
         <Nuxt />
       </v-container>
     </v-main>
@@ -14,8 +22,8 @@
     <v-navigation-drawer
       v-model="organization_drawer"
       width="300"
-      absolute
       temporary
+      fixed
     >
       <v-list>
         <v-list-item>
@@ -30,120 +38,151 @@
           <v-row class="d-flex justify-center">
             <v-col cols="12">
               <v-select
-                v-model="selected_organization"
                 item-text="name"
                 item-value="_id"
                 :items="organizations"
+                :value="selected_organization._id"
                 label="Organization"
                 hide-details
                 outlined
                 dense
                 :loading="$fetchState.pending"
                 no-data-text="You are not part of an organization"
-                @change="getOrganizationData"
+                @change="setSelectedOrganization"
               />
             </v-col>
           </v-row>
         </v-list-item>
-        <v-list-item v-if="isAdmin || isOrganizationAdmin">
+        <v-list-item v-if="isAdmin || isOrganizationAdmin" class="mt-2">
           <v-row class="d-flex justify-center">
-            <v-col v-if="isOrganizationAdmin" cols="3">
-              <v-tooltip color="primary" bottom>
-                <template #activator="{ on, attrs }">
-                  <v-btn
-                    block
-                    small
-                    outlined
-                    color="primary"
-                    v-bind="attrs"
-                    v-on="on"
-                    @click="create_group_dialog = true"
-                  >
-                    <v-icon>
-                      mdi-account-group-outline
-                    </v-icon>
-                  </v-btn>
-                </template>
-                <span>Create a Group</span>
-              </v-tooltip>
-            </v-col>
-            <v-col v-if="isOrganizationAdmin" cols="3">
-              <v-tooltip color="green" bottom>
-                <template #activator="{ on, attrs }">
-                  <v-btn
-                    block
-                    small
-                    outlined
-                    color="green"
-                    v-bind="attrs"
-                    v-on="on"
-                    @click="promote_organization_dialog = true"
-                  >
-                    <v-icon>
-                      mdi-account-multiple-plus-outline
-                    </v-icon>
-                  </v-btn>
-                </template>
-                <span>Promote someone Admin of Organization</span>
-              </v-tooltip>
-            </v-col>
-            <v-col v-if="isOrganizationAdmin" cols="3">
-              <v-menu
-                nudge-right="-60"
-                nudge-top="-5"
-                offset-y
-              >
-                <template #activator="{ on: onMenu }">
-                  <v-tooltip color="red" bottom>
-                    <template #activator="{ on: onTooltip }">
+            <v-col v-if="isOrganizationAdmin" cols="12">
+              <v-row justify="center">
+                <v-col cols="3">
+                  <v-tooltip color="primary" bottom>
+                    <template #activator="{ on, attrs }">
                       <v-btn
                         block
                         small
                         outlined
-                        color="red"
-                        v-on="{ ...onMenu, ...onTooltip }"
+                        color="primary"
+                        v-bind="attrs"
+                        v-on="on"
+                        @click="create_group_dialog = true"
                       >
                         <v-icon>
-                          mdi-delete
+                          mdi-account-group-outline
                         </v-icon>
                       </v-btn>
                     </template>
-                    <span>Delete Organization</span>
+                    <span>Create a Group</span>
                   </v-tooltip>
-                </template>
-
-                <v-card>
-                  <v-card-actions>
-                    <v-btn
-                      color="red"
-                      outlined
-                      @click="deleteOrganization"
-                    >
-                      Confirm Delete
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-menu>
+                </v-col>
+                <v-col cols="3">
+                  <v-tooltip color="primary" bottom>
+                    <template #activator="{ on, attrs }">
+                      <v-btn
+                        block
+                        small
+                        outlined
+                        color="primary"
+                        v-bind="attrs"
+                        v-on="on"
+                        @click="user_add_organization_dialog = true"
+                      >
+                        <v-icon>
+                          mdi-account-plus-outline
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Add user to Organization</span>
+                  </v-tooltip>
+                </v-col>
+                <v-col cols="3">
+                  <v-tooltip color="green" bottom>
+                    <template #activator="{ on, attrs }">
+                      <v-btn
+                        block
+                        small
+                        outlined
+                        color="green"
+                        v-bind="attrs"
+                        v-on="on"
+                        @click="promote_organization_dialog = true"
+                      >
+                        <v-icon>
+                          mdi-crown-outline
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Promote someone Admin of Organization</span>
+                  </v-tooltip>
+                </v-col>
+              </v-row>
             </v-col>
-            <v-col v-if="isAdmin" cols="3">
-              <v-tooltip color="primary" bottom>
-                <template #activator="{ on, attrs }">
-                  <v-btn
-                    block
-                    small
-                    outlined
-                    color="primary"
-                    v-bind="attrs"
-                    v-on="on"
-                    @click="create_organization_dialog = true"
+            <v-col cols="12">
+              <v-row v-if="isAdmin" justify="center">
+                <v-col cols="3">
+                  <v-menu
+                    nudge-right="-72"
+                    nudge-top="-5"
+                    offset-y
                   >
-                    <v-icon>
-                      mdi-domain
-                    </v-icon>
-                  </v-btn>
-                </template>
-                <span>Create an Organization</span>
-              </v-tooltip>
+                    <template #activator="{ on: onMenu }">
+                      <v-tooltip color="red" bottom>
+                        <template #activator="{ on: onTooltip }">
+                          <v-btn
+                            block
+                            small
+                            outlined
+                            color="red"
+                            v-on="{ ...onMenu, ...onTooltip }"
+                          >
+                            <v-icon>
+                              mdi-delete
+                            </v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Delete Organization</span>
+                      </v-tooltip>
+                    </template>
+
+                    <v-card>
+                      <v-card-actions>
+                        <v-btn
+                          color="red"
+                          dark
+                          @click="deleteOrganization"
+                        >
+                          <v-icon left>
+                            mdi-alert-outline
+                          </v-icon>
+                          Confirm Delete
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-menu>
+                </v-col>
+                <v-col cols="3">
+                  <v-tooltip color="primary" bottom>
+                    <template #activator="{ on, attrs }">
+                      <v-btn
+                        block
+                        small
+                        outlined
+                        color="primary"
+                        v-bind="attrs"
+                        v-on="on"
+                        @click="create_organization_dialog = true"
+                      >
+                        <v-icon>
+                          mdi-domain
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Create an Organization</span>
+                  </v-tooltip>
+                </v-col>
+              </v-row>
             </v-col>
           </v-row>
         </v-list-item>
@@ -154,7 +193,8 @@
           v-for="group in groups"
           :key="group._id"
           color="primary"
-          @click="logout"
+          link
+          :to="{ name: 'groups-uid', params: { uid: group._id } }"
         >
           <v-list-item-icon>
             <v-icon>
@@ -164,23 +204,33 @@
           <v-list-item-title>{{ group.name }}</v-list-item-title>
         </v-list-item>
       </v-list>
-      <div v-if="!groups.length" class="grey--text text-center">
+      <div v-if="!groups.length || groups_loading" class="grey--text text-center">
         <span v-if="!groups_loading">No group available for tha Organization</span>
         <v-progress-circular v-else indeterminate />
       </div>
       <template #append>
-        <div class="pa-2">
-          <v-btn
-            block
-            color="red"
-            @click="logout"
-          >
-            <v-icon left>
-              mdi-logout
-            </v-icon>
-            Disconnect
-          </v-btn>
-        </div>
+        <v-row class="pa-2">
+          <v-col cols="3">
+            <v-btn outlined @click="toggleDarkTheme">
+              <v-icon>
+                mdi-brightness-6
+              </v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="9">
+            <v-btn
+              block
+              dark
+              color="red"
+              @click="logout"
+            >
+              <v-icon left>
+                mdi-logout
+              </v-icon>
+              Disconnect
+            </v-btn>
+          </v-col>
+        </v-row>
       </template>
       <v-dialog
         v-model="create_group_dialog"
@@ -222,6 +272,50 @@
               @click="createGroup"
             >
               Create
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="user_add_organization_dialog"
+        max-width="400"
+      >
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">Organization Member</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col
+                  cols="12"
+                >
+                  <v-text-field
+                    v-model="user_add_organization_email"
+                    label="Email"
+                    hide-details
+                    required
+                    outlined
+                    @keyup.enter="addOrganizationUser"
+                  />
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="grey"
+              text
+              @click="user_add_organization_dialog = false"
+            >
+              Close
+            </v-btn>
+            <v-btn
+              color="primary"
+              @click="addOrganizationUser"
+            >
+              Add
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -319,36 +413,41 @@
 </template>
 
 <script>
+import { mapActions, mapMutations, mapState } from 'vuex'
+
 export default {
   name: 'DefaultLayout',
   middleware: 'auth',
   fetchOnServer: false,
   data () {
     return {
-      organization_drawer: true,
-      organizations: [],
+      organization_drawer: false,
       organization_name: '',
       create_organization_dialog: false,
+      user_add_organization_dialog: false,
+      user_add_organization_email: '',
       promote_organization_dialog: false,
       promote_organization_email: '',
-      selected_organization: null,
-      selected_organization_admins: [],
-      groups: [],
       group_name: '',
-      groups_loading: false,
       selected_group: 1,
       create_group_dialog: false
     }
   },
-  fetch () {
-    this.$axios.get('/organizations')
-      .then(({ data }) => {
-        this.organizations = data
-        if (!this.selected_organization) { this.selected_organization = data[0]._id }
-        this.getOrganizationData()
-      })
+  async fetch () {
+    await this.fetchOrganizations()
+    await this.fetchOrganizationAdmins()
+    await this.fetchGroups()
   },
   computed: {
+    ...mapState('organizations', {
+      organizations: state => state.organizations,
+      selected_organization: state => state.selected_organization,
+      selected_organization_admins: state => state.selected_organization_admins
+    }),
+    ...mapState('groups', {
+      groups: state => state.groups,
+      groups_loading: state => state.loading
+    }),
     user () {
       return this.$auth.user
     },
@@ -356,10 +455,27 @@ export default {
       return this.user.isAdmin
     },
     isOrganizationAdmin () {
-      return this.isAdmin || this.selected_organization_admins.includes(this.user._id)
+      return this.isAdmin || this.selected_organization_admins.find(admins => admins._id === this.user._id)
     }
   },
+  mounted () {
+    if (!localStorage.getItem('theme') && this.$vuetify.theme.dark) {
+      localStorage.setItem('theme', 'dark')
+    }
+
+    this.$vuetify.theme.dark = localStorage.getItem('theme') === 'dark'
+  },
   methods: {
+    ...mapActions('organizations', [
+      'fetchOrganizations',
+      'fetchOrganizationAdmins'
+    ]),
+    ...mapActions('groups', [
+      'fetchGroups'
+    ]),
+    ...mapMutations('organizations', [
+      'setSelectedOrganizationById'
+    ]),
     logout () {
       this.$auth.logout()
       this.$router.push('/login')
@@ -373,8 +489,24 @@ export default {
         this.$fetch()
       })
     },
+    deleteOrganization () {
+      this.$axios.delete(`/organizations/${this.selected_organization._id}`)
+        .then(() => {
+          this.selected_organization = null
+          this.$fetch()
+        })
+    },
+    addOrganizationUser () {
+      this.$axios.post(`/organizations/${this.selected_organization._id}/users`, {
+        mail: this.user_add_organization_email
+      }).then(() => {
+        this.user_add_organization_dialog = false
+        this.user_add_organization_email = ''
+        this.$fetch()
+      })
+    },
     promoteOrganizationAdmin () {
-      this.$axios.post(`/organizations/${this.selected_organization}/promote`, {
+      this.$axios.post(`/organizations/${this.selected_organization._id}/admins`, {
         mail: this.promote_organization_email
       }).then(() => {
         this.promote_organization_dialog = false
@@ -382,42 +514,22 @@ export default {
         this.$fetch()
       })
     },
-    deleteOrganization () {
-      this.$axios.delete(`/organizations/${this.selected_organization}`)
-        .then(() => {
-          this.selected_organization = null
-          this.$fetch()
-        })
-    },
-    getOrganizationData () {
-      this.groups_loading = true
-      this.selected_organization_admins = []
-      this.groups = []
-
-      this.$axios.get(`/organizations/${this.selected_organization}`)
-        .then(({ data }) => {
-          this.selected_organization_admins = data.admins
-        })
-        .finally(() => {
-          this.groups_loading = false
-        })
-
-      this.$axios.get(`/groups/organization/${this.selected_organization}`)
-        .then(({ data }) => {
-          this.groups = data
-        })
-        .finally(() => {
-          this.groups_loading = false
-        })
-    },
     createGroup () {
-      this.groups = []
-      this.$axios.post(`/groups/organization/${this.selected_organization}`, {
+      this.$axios.post(`/groups/organization/${this.selected_organization._id}`, {
         name: this.group_name
       }).then(() => {
         this.create_group_dialog = false
-        this.getOrganizationData()
+        this.fetchGroups()
       })
+    },
+    toggleDarkTheme () {
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
+      localStorage.setItem('theme', this.$vuetify.theme.dark ? 'dark' : 'light')
+    },
+    setSelectedOrganization (organization) {
+      this.setSelectedOrganizationById(organization)
+      this.fetchOrganizationAdmins()
+      this.fetchGroups()
     }
   }
 }
