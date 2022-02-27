@@ -211,7 +211,7 @@
       <template #append>
         <v-row class="pa-2">
           <v-col cols="3">
-            <v-btn outlined @click="$vuetify.theme.dark = !$vuetify.theme.dark">
+            <v-btn outlined @click="toggleDarkTheme">
               <v-icon>
                 mdi-brightness-6
               </v-icon>
@@ -458,6 +458,13 @@ export default {
       return this.isAdmin || this.selected_organization_admins.find(admins => admins._id === this.user._id)
     }
   },
+  mounted () {
+    if (!localStorage.getItem('theme') && this.$vuetify.theme.dark) {
+      localStorage.setItem('theme', 'dark')
+    }
+
+    this.$vuetify.theme.dark = localStorage.getItem('theme') === 'dark'
+  },
   methods: {
     ...mapActions('organizations', [
       'fetchOrganizations',
@@ -514,6 +521,10 @@ export default {
         this.create_group_dialog = false
         this.fetchGroups()
       })
+    },
+    toggleDarkTheme () {
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
+      localStorage.setItem('theme', this.$vuetify.theme.dark ? 'dark' : 'light')
     },
     setSelectedOrganization (organization) {
       this.setSelectedOrganizationById(organization)

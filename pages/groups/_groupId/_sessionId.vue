@@ -176,11 +176,12 @@
             class="align-start"
           >
             <v-img
-              :src="qr_code_url"
+              :src="qr_code_img"
               class="rounded"
               contain
               :max-height="qr_code_max_size"
               :max-width="qr_code_max_size"
+              style="border: 1px solid #0000001F; max-width: 100%;"
             />
           </v-avatar>
         </v-col>
@@ -212,6 +213,7 @@ import { mapActions, mapState } from 'vuex'
 import { debounce } from 'lodash'
 import moment from 'moment'
 import QRCode from 'qrcode'
+const TimeBasedToken = require('~/scripts/generate-tbt.js')
 
 export default {
   name: 'SessionPage',
@@ -236,8 +238,9 @@ export default {
       users: [],
       sign_mode: 'none',
       session_code: '000000',
-      qr_code_data: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-      qr_code_url: '',
+      qr_code_secret: 'secret',
+      qr_code_data: '',
+      qr_code_img: '',
       qr_code_max_size: 0,
       qr_code_interval: undefined,
       time_left: {
@@ -389,10 +392,8 @@ export default {
   },
   mounted () {
     this.qr_code_interval = setInterval(() => {
-      const randomNumber = Math.floor(Math.random() * 10000)
-      this.qr_code_data = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQ${randomNumber}`
       this.windowResize()
-    }, 5000)
+    }, 1000)
 
     this.updateTimeLeft()
   },
@@ -405,7 +406,7 @@ export default {
     ]),
     windowResize: debounce(function () {
       if (this.sign_mode === 'qrcode' && this.$refs.qrcodeCanvasContainer) {
-        this.qr_code_max_size = Math.min(this.$refs.qrcodeCanvasContainer.clientWidth - 24, Math.min(window.innerHeight - 400, this.$refs.qrcodeCanvasContainer.clientWidth - 24))
+        this.qr_code_max_size = Math.min(this.$refs.qrcodeCanvasContainer.clientWidth - 24, Math.min(window.innerHeight - 300, this.$refs.qrcodeCanvasContainer.clientWidth - 24))
         this.updateQrCodeThrottle()
       }
     }, 20),
@@ -413,15 +414,17 @@ export default {
       this.updateQRCode()
     }, 100),
     updateQRCode () {
+      this.qr_code_data = TimeBasedToken(this.qr_code_secret, 30, 8)
+
       if (this.sign_mode === 'qrcode' && this.$refs.qrcodeCanvasContainer) {
         QRCode
           .toDataURL(this.qr_code_data, {
             width: this.qr_code_max_size,
             height: this.qr_code_max_size,
             margin: 1
-          }, (err, url) => {
+          }, (err, dataUrl) => {
             if (!err) {
-              this.qr_code_url = url
+              this.qr_code_img = dataUrl
             }
           })
       }
