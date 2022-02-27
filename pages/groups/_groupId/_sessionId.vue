@@ -168,7 +168,9 @@
           order="first"
           order-md="0"
         >
-          <canvas ref="qrcodeCanvas" class="rounded" style="border: 1px solid #0000001F; max-width: 100%;" />
+          <v-avatar rounded size="100%" height="auto" class="align-start">
+            <v-img :src="qr_code_url" class="rounded" contain />
+          </v-avatar>
         </v-col>
         <!-- Code Card -->
         <v-col
@@ -208,15 +210,9 @@ export default {
   name: 'SessionPage',
   filters: {
     presentColor (value) {
-      if (value !== null) {
-        if (value) {
-          return '#4CAF5033'
-        } else {
-          return '#F4433633'
-        }
-      } else {
-        return ''
-      }
+      if (value === null) { return '' }
+      if (value) { return '#4CAF5033' }
+      return '#F4433633'
     }
   },
   data () {
@@ -230,6 +226,7 @@ export default {
       sign_mode: 'none',
       session_code: '000000',
       qr_code_data: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+      qr_code_url: '',
       qr_code_interval: undefined,
       time_left: '00:00:00'
     }
@@ -389,19 +386,22 @@ export default {
     ]),
     updateQrCodeThrottle: debounce(function () {
       this.updateQRCode()
-    }, 20),
+    }, 100),
     updateQRCode () {
-      this.$nextTick(() => {
-        if (this.$refs.qrcodeCanvas) {
-          const qrSize = Math.min(this.$refs.qrcodeCanvasContainer.clientWidth - 24, Math.min(window.innerHeight - 400, this.$refs.qrcodeCanvasContainer.clientWidth - 24))
+      if (this.sign_mode === 'qrcode' && this.$refs.qrcodeCanvasContainer) {
+        const qrSize = Math.min(this.$refs.qrcodeCanvasContainer.clientWidth - 24, Math.min(window.innerHeight - 400, this.$refs.qrcodeCanvasContainer.clientWidth - 24))
 
-          QRCode.toCanvas(this.$refs.qrcodeCanvas, this.qr_code_data, {
+        QRCode
+          .toDataURL(this.qr_code_data, {
             width: qrSize,
             height: qrSize,
             margin: 1
+          }, (err, url) => {
+            if (!err) {
+              this.qr_code_url = url
+            }
           })
-        }
-      })
+      }
     },
     updateTimeLeft () {
       const duration = moment(this.session.endDate).diff(moment(), 'seconds')
