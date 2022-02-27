@@ -22,7 +22,7 @@ export default {
       { property: 'og:title', content: 'So We Quiches' },
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: 'https://sign.quiches.ovh/' },
-      { property: 'og:image', content: 'https://fresh-gecko-33.loca.lt/logo.png' },
+      { property: 'og:image', content: 'https://sign.quiches.ovh/logo.png' },
       { property: 'og:description', content: 'Wanna Sign? - Go Quiches!' },
       { name: 'theme-color', content: '#ec94c8' }
     ],
