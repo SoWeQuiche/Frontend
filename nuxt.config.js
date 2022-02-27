@@ -18,7 +18,13 @@ export default {
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' }
+      { name: 'format-detection', content: 'telephone=no' },
+      { property: 'og:title', content: 'So We Quiches' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:url', content: 'https://sign.quiches.ovh/' },
+      { property: 'og:image', content: 'https://fresh-gecko-33.loca.lt/logo.png' },
+      { property: 'og:description', content: 'Wanna Sign? - Go Quiches!' },
+      { name: 'theme-color', content: '#ec94c8' }
     ],
     link: [
       { rel: 'icon', type: 'image/png', href: '/logo.png' }
