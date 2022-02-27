@@ -9,13 +9,13 @@
         <v-card-subtitle class="text-center mt-2">
           <span class="grey--text">Time Left:</span>
           <span v-if="!isTimerEnded" class="pl-1 text-h6">{{ time_left.hours | addZero }}h {{ time_left.minutes | addZero }}m {{ time_left.seconds | addZero }}s</span>
-          <span v-else>Session Ended</span>
+          <span v-else class="pl-1 text-h6">Session Ended</span>
         </v-card-subtitle>
       </v-card>
       <div v-if="!isMobile" style="min-width: 200px;">
         <span class="grey--text">Time Left:</span>
         <span v-if="!isTimerEnded" class="pl-1 text-h6">{{ time_left.hours | addZero }}h {{ time_left.minutes | addZero }}m {{ time_left.seconds | addZero }}s</span>
-        <span v-else>Session Ended</span>
+        <span v-else class="pl-1 text-h6">Session Ended</span>
       </div>
     </v-col>
     <v-col cols="12" class="pl-8 d-flex justify-center justify-md-start align-center flex-column flex-md-row">
