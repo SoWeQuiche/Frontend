@@ -123,9 +123,10 @@
               <v-row v-if="isAdmin" justify="center">
                 <v-col cols="3">
                   <v-menu
-                    nudge-right="-72"
-                    nudge-top="-5"
+                    nudge-right="-64"
+                    nudge-top="-10"
                     offset-y
+                    bottom
                   >
                     <template #activator="{ on: onMenu }">
                       <v-tooltip color="red" bottom>
@@ -146,20 +147,16 @@
                       </v-tooltip>
                     </template>
 
-                    <v-card>
-                      <v-card-actions>
-                        <v-btn
-                          color="red"
-                          dark
-                          @click="deleteOrganization"
-                        >
-                          <v-icon left>
-                            mdi-alert-outline
-                          </v-icon>
-                          Confirm Delete
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
+                    <v-btn
+                      color="red"
+                      dark
+                      @click="deleteOrganization"
+                    >
+                      <v-icon left>
+                        mdi-alert-outline
+                      </v-icon>
+                      Confirm Delete
+                    </v-btn>
                   </v-menu>
                 </v-col>
                 <v-col cols="3">

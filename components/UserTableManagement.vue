@@ -15,12 +15,7 @@
       :items="users"
     >
       <template #[`item.actions`]="{ item }">
-        <v-menu
-          nudge-right="-5"
-          nudge-top="7"
-          offset-x
-          left
-        >
+        <v-menu nudge-right="-10" offset-x left>
           <template #activator="{ on }">
             <v-btn
               dark
@@ -33,20 +28,16 @@
             </v-btn>
           </template>
 
-          <v-card>
-            <v-card-actions>
-              <v-btn
-                color="red"
-                dark
-                @click="deleteUser(item)"
-              >
-                <v-icon left>
-                  mdi-alert-outline
-                </v-icon>
-                Confirm Delete
-              </v-btn>
-            </v-card-actions>
-          </v-card>
+          <v-btn
+            color="red"
+            dark
+            @click="deleteUser(item)"
+          >
+            <v-icon left>
+              mdi-alert-outline
+            </v-icon>
+            Confirm Delete
+          </v-btn>
         </v-menu>
       </template>
     </v-data-table>
