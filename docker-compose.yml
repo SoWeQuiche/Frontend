@@ -1,0 +1,28 @@
+version: '3.1'
+
+services:
+  vue:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./.env
+    networks:
+      - reverse-proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.SWQ_FRONT.loadbalancer.server.port=8000
+      - traefik.http.routers.SWQ_FRONT.rule=Host(`sign.quiches.ovh`)
+      - traefik.http.routers.SWQ_FRONT.entrypoints=http
+      - traefik.http.routers.SWQ_FRONT.middlewares=https-redirect@file
+      - traefik.http.routers.SWQ_FRONT-Https.rule=Host(`sign.quiches.ovh`)
+      - traefik.http.routers.SWQ_FRONT-Https.entrypoints=https
+      - traefik.http.routers.SWQ_FRONT-Https.middlewares=security@file, compression@file
+      - traefik.http.routers.SWQ_FRONT-Https.tls=true
+      - traefik.http.routers.SWQ_FRONT-Https.tls.certresolver=letsencrypt
+
+
+networks:
+  reverse-proxy:
+    external: true
