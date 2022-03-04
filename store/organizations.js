@@ -15,12 +15,15 @@ const actions = {
     commit('setSelectedOrganization', organization)
     await dispatch('groups/fetchGroups', null, { root: true })
   },
-  async fetchOrganizations ({ commit, state, dispatch }) {
+  async fetchOrganizations ({ commit, state, dispatch, rootState }) {
     const organizations = await this.$axios.$get('/organizations')
     commit('setOrganizations', organizations)
 
-    if (!state.selected_organization._id) {
+    if (state.selected_organization._id === '') {
       commit('setSelectedOrganization', organizations[0] || {})
+    }
+
+    if (state.selected_organization._id !== rootState.groups.selected_group.organization) {
       await dispatch('groups/fetchGroups', null, { root: true })
     }
   },
@@ -31,6 +34,11 @@ const actions = {
   async fetchOrganizationUsers ({ state, commit }) {
     const organizationUsers = await this.$axios.$get(`/organizations/${state.selected_organization._id}/users`)
     commit('setOrganizationUsers', organizationUsers)
+  },
+  async deleteOrganization ({ state, commit, dispatch }) {
+    await this.$axios.$delete(`/organizations/${state.selected_organization._id}`)
+    commit('setSelectedOrganization', state.organizations[0] || {})
+    dispatch('fetchOrganizations')
   }
 }
 

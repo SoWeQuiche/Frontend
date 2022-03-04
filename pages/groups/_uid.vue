@@ -12,53 +12,25 @@
             </div>
           </v-card-title>
 
-          <v-card-actions class="d-flex flex-column flex-sm-row">
+          <v-card-actions class="d-flex flex-column flex-sm-row justify-center">
             <v-btn color="primary" outlined @click="create_session_dialog = true">
               <v-icon left>
                 mdi-clock-outline
               </v-icon>
               Add Session
             </v-btn>
-            <v-tooltip color="green" bottom>
-              <template #activator="{ on }">
-                <v-btn color="green" outlined class="ml-2 my-2 my-sm-0" v-on="on" @click="promote_group_dialog = true">
-                  <v-icon left>
-                    mdi-account-multiple-plus-outline
-                  </v-icon>
-                  Promote Group Admin
-                </v-btn>
-              </template>
-              <span>Add Admin to manage sessions</span>
-            </v-tooltip>
-            <v-menu
-              nudge-right="-15"
-              nudge-top="-5"
-              offset-y
+            <v-btn
+              color="blue-grey"
+              class="mt-2 mt-sm-0"
+              outlined
+              link
+              :to="{ name: 'groups-groupId-settings', params: { groupId: uid } }"
             >
-              <template #activator="{ on }">
-                <v-btn color="red" outlined class="ml-2" v-on="on">
-                  <v-icon left>
-                    mdi-delete
-                  </v-icon>
-                  Delete Group
-                </v-btn>
-              </template>
-
-              <v-card>
-                <v-card-actions>
-                  <v-btn
-                    color="red"
-                    dark
-                    @click="deleteGroup"
-                  >
-                    <v-icon left>
-                      mdi-alert-outline
-                    </v-icon>
-                    Confirm Delete
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-menu>
+              <v-icon left>
+                mdi-cog-outline
+              </v-icon>
+              Settings
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -297,51 +269,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <v-dialog
-      v-model="promote_group_dialog"
-      max-width="400"
-    >
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">Organization Administrator</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col
-                cols="12"
-              >
-                <v-text-field
-                  v-model="promote_group_email"
-                  label="Email"
-                  hide-details
-                  required
-                  outlined
-                  @keyup.enter="promoteGroupAdmin"
-                />
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="grey"
-            text
-            @click="promote_group_dialog = false"
-          >
-            Close
-          </v-btn>
-          <v-btn
-            color="green"
-            @click="promoteGroupAdmin"
-          >
-            Promote
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-row>
 </template>
 
@@ -485,21 +412,6 @@ export default {
         .then(() => {
           this.fetchSessions()
         })
-    },
-    deleteGroup () {
-      this.$axios.delete(`/groups/${this.uid}`)
-        .then(() => {
-          this.fetchGroups()
-          this.$router.push('/')
-        })
-    },
-    promoteGroupAdmin () {
-      this.$axios.post(`/groups/${this.uid}/admins`, {
-        mail: this.promote_group_email
-      }).then(() => {
-        this.promote_group_dialog = false
-        this.promote_group_email = ''
-      })
     }
   }
 }

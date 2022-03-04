@@ -464,7 +464,8 @@ export default {
   methods: {
     ...mapActions('organizations', [
       'fetchOrganizations',
-      'fetchOrganizationAdmins'
+      'fetchOrganizationAdmins',
+      'deleteOrganization'
     ]),
     ...mapActions('groups', [
       'fetchGroups'
@@ -490,15 +491,8 @@ export default {
       }).then(() => {
         this.create_organization_dialog = false
         this.organization_name = ''
-        this.$fetch()
+        this.fetchOrganizations()
       })
-    },
-    deleteOrganization () {
-      this.$axios.delete(`/organizations/${this.selected_organization._id}`)
-        .then(() => {
-          this.selected_organization = null
-          this.$fetch()
-        })
     },
     addOrganizationUser () {
       this.$axios.post(`/organizations/${this.selected_organization._id}/users`, {
@@ -506,7 +500,6 @@ export default {
       }).then(() => {
         this.user_add_organization_dialog = false
         this.user_add_organization_email = ''
-        this.$fetch()
       })
     },
     promoteOrganizationAdmin () {
@@ -515,7 +508,6 @@ export default {
       }).then(() => {
         this.promote_organization_dialog = false
         this.promote_organization_email = ''
-        this.$fetch()
       })
     },
     createGroup () {
