@@ -55,7 +55,7 @@
         </v-list-item>
         <v-list-item v-if="isAdmin || isOrganizationAdmin" class="mt-2">
           <v-row class="d-flex justify-center">
-            <v-col v-if="isOrganizationAdmin" cols="12">
+            <v-col cols="12">
               <v-row justify="center">
                 <v-col cols="3">
                   <v-tooltip color="primary" bottom>
@@ -78,88 +78,27 @@
                   </v-tooltip>
                 </v-col>
                 <v-col cols="3">
-                  <v-tooltip color="primary" bottom>
+                  <v-tooltip color="blue-grey" bottom>
                     <template #activator="{ on, attrs }">
                       <v-btn
+                        link
                         block
                         small
                         outlined
-                        color="primary"
+                        color="blue-grey"
+                        :to="{ name: 'organizations-settings' }"
                         v-bind="attrs"
                         v-on="on"
-                        @click="user_add_organization_dialog = true"
                       >
                         <v-icon>
-                          mdi-account-plus-outline
+                          mdi-cog-outline
                         </v-icon>
                       </v-btn>
                     </template>
-                    <span>Add user to Organization</span>
+                    <span>Organization Settings</span>
                   </v-tooltip>
                 </v-col>
-                <v-col cols="3">
-                  <v-tooltip color="green" bottom>
-                    <template #activator="{ on, attrs }">
-                      <v-btn
-                        block
-                        small
-                        outlined
-                        color="green"
-                        v-bind="attrs"
-                        v-on="on"
-                        @click="promote_organization_dialog = true"
-                      >
-                        <v-icon>
-                          mdi-crown-outline
-                        </v-icon>
-                      </v-btn>
-                    </template>
-                    <span>Promote someone Admin of Organization</span>
-                  </v-tooltip>
-                </v-col>
-              </v-row>
-            </v-col>
-            <v-col cols="12">
-              <v-row v-if="isAdmin" justify="center">
-                <v-col cols="3">
-                  <v-menu
-                    nudge-right="-64"
-                    nudge-top="-10"
-                    offset-y
-                    bottom
-                  >
-                    <template #activator="{ on: onMenu }">
-                      <v-tooltip color="red" bottom>
-                        <template #activator="{ on: onTooltip }">
-                          <v-btn
-                            block
-                            small
-                            outlined
-                            color="red"
-                            v-on="{ ...onMenu, ...onTooltip }"
-                          >
-                            <v-icon>
-                              mdi-delete
-                            </v-icon>
-                          </v-btn>
-                        </template>
-                        <span>Delete Organization</span>
-                      </v-tooltip>
-                    </template>
-
-                    <v-btn
-                      color="red"
-                      dark
-                      @click="deleteOrganization"
-                    >
-                      <v-icon left>
-                        mdi-alert-outline
-                      </v-icon>
-                      Confirm Delete
-                    </v-btn>
-                  </v-menu>
-                </v-col>
-                <v-col cols="3">
+                <v-col v-if="isAdmin" cols="3">
                   <v-tooltip color="primary" bottom>
                     <template #activator="{ on, attrs }">
                       <v-btn
@@ -462,6 +401,7 @@ export default {
     ...mapActions('organizations', [
       'fetchOrganizations',
       'fetchOrganizationAdmins',
+      'fetchOrganizationUsers',
       'deleteOrganization'
     ]),
     ...mapActions('groups', [
@@ -522,6 +462,7 @@ export default {
     setSelectedOrganization (organization) {
       this.setSelectedOrganizationById(organization)
       this.fetchOrganizationAdmins()
+      this.fetchOrganizationUsers()
       this.fetchGroups()
     }
   }

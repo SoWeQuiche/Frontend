@@ -5,8 +5,8 @@
     </v-col>
     <v-col cols="12">
       <h1 class="text-h4 text-center">
-        Settings for group
-        <span class="grey--text" v-text="selected_group.name" />
+        Settings for organization
+        <span class="grey--text" v-text="selected_organization.name" />
       </h1>
     </v-col>
     <v-col cols="12">
@@ -15,31 +15,29 @@
           <v-col cols="12">
             <UserTableManagement
               title="Users List"
-              :users="selected_group_users"
-              :existing-users="selected_organization_users"
-              add-existing-user
-              @user:add="addUserToGroup"
-              @user:delete="deleteUserFromGroup"
+              :users="selected_organization_users"
+              @user:add="addUserToOrganization"
+              @user:delete="deleteUserFromOrganization"
             />
           </v-col>
           <v-col cols="12">
             <UserTableManagement
               title="Admins List"
-              :users="selected_group_admins"
+              :users="selected_organization_admins"
               is-promote
-              @user:add="addAdminToGroup"
-              @user:delete="deleteAdminFromGroup"
+              @user:add="addAdminToOrganization"
+              @user:delete="deleteAdminFromOrganization"
             />
           </v-col>
-          <v-col cols="12">
+          <v-col v-if="isAdmin" cols="12">
             <v-card outlined class="borderRed">
               <v-card-text class="d-flex flex-column flex-sm-row justify-space-between align-center">
                 <div>
                   <div class="subtitle-1" :class="{ 'black--text': !$vuetify.theme.dark, 'white--text': $vuetify.theme.dark }">
-                    Delete this Group
+                    Delete this Organization
                   </div>
                   <div>
-                    Once you delete a group, there is no going back. Please be certain.
+                    Once you delete a organization, there is no going back. Please be certain.
                   </div>
                 </div>
                 <v-menu
@@ -48,17 +46,18 @@
                   :offset-x="!isMobile"
                   :offset-y="isMobile"
                   left
+                  max-width="187"
                 >
                   <template #activator="{ on }">
                     <v-btn color="red" outlined class="mt-3 mt-sm-0" v-on="on">
                       <v-icon left>
                         mdi-delete
                       </v-icon>
-                      Delete Group
+                      Delete Organization
                     </v-btn>
                   </template>
 
-                  <v-btn color="red" dark @click="deleteGroupAction">
+                  <v-btn color="red" dark @click="deleteOrganizationAction">
                     <v-icon left>
                       mdi-alert-outline
                     </v-icon>
@@ -75,37 +74,29 @@
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapState } from 'vuex/dist/vuex.esm.browser'
 
 export default {
   name: 'SettingsPage',
-  data () {
-    return {}
-  },
   async fetch () {
-    await this.fetchGroup(this.uid)
-    this.fetchGroupAdmins().then()
-    this.fetchGroupUsers().then()
-
-    await this.fetchOrganization(this.selected_group.organization)
-    this.fetchOrganizationUsers().then()
-  },
-  head () {
-    return {
-      title: `Group - ${this.selected_group.name} - Settings`
+    if (this.selected_organization._id) {
+      this.fetchOrganizationAdmins().then()
+      this.fetchOrganizationUsers().then()
+    } else {
+      await this.fetchOrganizations()
     }
   },
   computed: {
     ...mapState('organizations', {
-      selected_organization_users: state => state.selected_organization_users
+      selected_organization: state => state.selected_organization,
+      selected_organization_users: state => state.selected_organization_users,
+      selected_organization_admins: state => state.selected_organization_admins
     }),
-    ...mapState('groups', {
-      selected_group: state => state.selected_group,
-      selected_group_admins: state => state.selected_group_admins,
-      selected_group_users: state => state.selected_group_users
-    }),
-    uid () {
-      return this.$route.params.groupId
+    user () {
+      return this.$auth.user
+    },
+    isAdmin () {
+      return this.user.isAdmin
     },
     isMobile () {
       return this.$vuetify.breakpoint.xs
@@ -117,18 +108,7 @@ export default {
           to: '/'
         },
         {
-          text: `Group - ${this.selected_group.name}`,
-          link: true,
-          exact: true,
-          to: {
-            name: 'groups-uid',
-            params: {
-              uid: this.$route.params.groupId
-            }
-          }
-        },
-        {
-          text: 'Settings'
+          text: 'Organization Settings'
         }
       ]
     }
@@ -136,20 +116,17 @@ export default {
   methods: {
     ...mapActions('organizations', [
       'fetchOrganization',
-      'fetchOrganizationUsers'
+      'fetchOrganizations',
+      'fetchOrganizationUsers',
+      'addUserToOrganization',
+      'deleteUserFromOrganization',
+      'fetchOrganizationAdmins',
+      'addAdminToOrganization',
+      'deleteAdminFromOrganization',
+      'deleteOrganization'
     ]),
-    ...mapActions('groups', [
-      'fetchGroup',
-      'fetchGroupAdmins',
-      'fetchGroupUsers',
-      'addUserToGroup',
-      'addAdminToGroup',
-      'deleteUserFromGroup',
-      'deleteAdminFromGroup',
-      'deleteGroup'
-    ]),
-    async deleteGroupAction () {
-      await this.deleteGroup()
+    async deleteOrganizationAction () {
+      await this.deleteOrganization()
       await this.$router.push('/')
     }
   }

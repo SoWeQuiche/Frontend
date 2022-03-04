@@ -12,13 +12,12 @@ const actions = {
   async fetchGroup ({ state, commit }, groupId) {
     commit('setLoading', true)
 
-    if (state.selected_group?._id === groupId) {
-      commit('setLoading', false)
-      return
+    if (state.selected_group?._id !== groupId) {
+      const group = await this.$axios.$get(`/groups/${groupId}`)
+      commit('setSelectedGroup', group)
+      commit('setSelectedGroupAdmins', [])
+      commit('setSelectedGroupUsers', [])
     }
-
-    const group = await this.$axios.$get(`/groups/${groupId}`)
-    commit('setSelectedGroup', group)
 
     commit('setLoading', false)
   },
