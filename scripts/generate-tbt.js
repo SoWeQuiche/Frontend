@@ -1,6 +1,7 @@
 const crypto = require('crypto')
 const moment = require('moment')
 
+// TODO - Manage time offset with a request to retrieve server time
 /**
  * @param {string} secret - The secret to use for the token.
  * @param {number} validTimeSeconds - The number of seconds the token is valid for.

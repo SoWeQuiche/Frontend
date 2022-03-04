@@ -7,7 +7,7 @@
       top
       left
       color="primary"
-      @click="organization_drawer = !organization_drawer"
+      @click="openOrganizationDrawer"
     >
       <v-icon>mdi-menu</v-icon>
     </v-btn>
@@ -46,7 +46,7 @@
                 hide-details
                 outlined
                 dense
-                :loading="$fetchState.pending"
+                :loading="loading"
                 no-data-text="You are not part of an organization"
                 @change="setSelectedOrganization"
               />
@@ -421,6 +421,7 @@ export default {
   fetchOnServer: false,
   data () {
     return {
+      loading: false,
       organization_drawer: false,
       organization_name: '',
       create_organization_dialog: false,
@@ -432,11 +433,6 @@ export default {
       selected_group: 1,
       create_group_dialog: false
     }
-  },
-  async fetch () {
-    await this.fetchOrganizations()
-    await this.fetchOrganizationAdmins()
-    await this.fetchGroups()
   },
   computed: {
     ...mapState('organizations', {
@@ -479,6 +475,14 @@ export default {
     logout () {
       this.$auth.logout()
       this.$router.push('/login')
+    },
+    async openOrganizationDrawer () {
+      this.organization_drawer = true
+
+      this.loading = true
+      await this.fetchOrganizations()
+      await this.fetchOrganizationAdmins()
+      this.loading = false
     },
     createOrganization () {
       this.$axios.post('/organizations', {

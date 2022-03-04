@@ -8,16 +8,21 @@ const state = () => ({
 const getters = {}
 
 const actions = {
-  async fetchOrganization ({ commit, state }, organizationId) {
+  async fetchOrganization ({ commit, state, dispatch }, organizationId) {
     if (state.selected_organization?._id === organizationId) { return }
 
     const organization = await this.$axios.$get(`/organizations/${organizationId}`)
     commit('setSelectedOrganization', organization)
+    await dispatch('groups/fetchGroups', null, { root: true })
   },
-  async fetchOrganizations ({ commit }) {
+  async fetchOrganizations ({ commit, state, dispatch }) {
     const organizations = await this.$axios.$get('/organizations')
     commit('setOrganizations', organizations)
-    commit('setSelectedOrganization', organizations[0] || {})
+
+    if (!state.selected_organization._id) {
+      commit('setSelectedOrganization', organizations[0] || {})
+      await dispatch('groups/fetchGroups', null, { root: true })
+    }
   },
   async fetchOrganizationAdmins ({ state, commit }) {
     const organizationAdmins = await this.$axios.$get(`/organizations/${state.selected_organization._id}/admins`)

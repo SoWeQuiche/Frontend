@@ -251,6 +251,9 @@ export default {
     }
   },
   async fetch () {
+    await this.fetchGroup(this.$route.params.groupId)
+    await this.fetchOrganization(this.selected_group.organization)
+
     this.$axios.get('https://randomuser.me/api/?results=20')
       .then(({ data: { results } }) => {
         this.users = results.map(({ login, name, email }) => ({
@@ -270,8 +273,6 @@ export default {
     this.session.to_time = moment(session.endDate).format('HH:mm')
 
     this.updateTimeLeft()
-
-    await this.fetchGroup(this.$route.params.groupId)
   },
   head () {
     return {
@@ -401,6 +402,9 @@ export default {
     clearInterval(this.qr_code_interval)
   },
   methods: {
+    ...mapActions('organizations', [
+      'fetchOrganization'
+    ]),
     ...mapActions('groups', [
       'fetchGroup'
     ]),
