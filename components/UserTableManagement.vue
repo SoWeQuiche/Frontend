@@ -5,9 +5,9 @@
       <v-spacer />
       <v-btn
         dark
-        :color="is_promote_color"
+        :color="isPromoteColor"
         @click="add_user_dialog = true"
-        v-text="is_promote_text"
+        v-text="isPromoteText"
       />
     </v-card-title>
     <v-data-table
@@ -47,7 +47,7 @@
     >
       <v-card>
         <v-card-title>
-          <span class="text-h5" v-text="is_promote_text" />
+          <span class="text-h5" v-text="isPromoteText" />
         </v-card-title>
         <v-card-text>
           <v-container>
@@ -75,7 +75,7 @@
                   outlined
                   item-value="mail"
                   item-text="mail"
-                  :items="existingUsers"
+                  :items="availableExistingUsers"
                 />
               </v-col>
             </v-row>
@@ -86,7 +86,7 @@
           <v-btn color="grey" text @click="add_user_dialog = false">
             Close
           </v-btn>
-          <v-btn :color="is_promote_color" @click="addUser">
+          <v-btn :color="isPromoteColor" @click="addUser">
             Add
           </v-btn>
         </v-card-actions>
@@ -134,13 +134,18 @@ export default {
     }
   },
   computed: {
-    is_promote_color () {
+    availableExistingUsers () {
+      return this.existingUsers.filter((user) => {
+        return this.users.findIndex(u => u.mail === user.mail) === -1
+      })
+    },
+    isPromoteColor () {
       if (this.isPromote) {
         return 'green'
       }
       return 'primary'
     },
-    is_promote_text () {
+    isPromoteText () {
       if (this.isPromote) {
         return 'Promote User'
       }
