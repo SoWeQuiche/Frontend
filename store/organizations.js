@@ -37,6 +37,7 @@ const actions = {
     }
   },
   async fetchOrganizationUsers ({ state, commit }) {
+    if (!state.selected_organization._id) { return }
     const organizationUsers = await this.$axios.$get(`/organizations/${state.selected_organization._id}/users`)
     commit('setOrganizationUsers', organizationUsers)
   },
@@ -49,6 +50,7 @@ const actions = {
     dispatch('fetchOrganizationUsers')
   },
   async fetchOrganizationAdmins ({ state, commit }) {
+    if (!state.selected_organization._id) { return }
     const organizationAdmins = await this.$axios.$get(`/organizations/${state.selected_organization._id}/admins`)
     commit('setOrganizationAdmins', organizationAdmins)
   },
