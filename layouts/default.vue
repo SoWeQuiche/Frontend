@@ -266,7 +266,6 @@ import { mapActions, mapMutations, mapState } from 'vuex'
 export default {
   name: 'DefaultLayout',
   middleware: 'auth',
-  fetchOnServer: false,
   data () {
     return {
       loading: false,

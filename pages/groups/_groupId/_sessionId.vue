@@ -217,7 +217,6 @@ const TimeBasedToken = require('~/scripts/generate-tbt.js')
 
 export default {
   name: 'SessionPage',
-  fetchOnServer: false,
   filters: {
     presentColor (value) {
       if ([null, undefined].includes(value)) { return '' }

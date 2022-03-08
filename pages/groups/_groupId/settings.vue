@@ -13,7 +13,7 @@
       <v-container>
         <v-row>
           <v-col cols="12">
-            <UserTableManagement
+            <user-table-management
               title="Users List"
               :users="selected_group_users"
               :existing-users="selected_organization_users"
@@ -23,7 +23,7 @@
             />
           </v-col>
           <v-col cols="12">
-            <UserTableManagement
+            <user-table-management
               title="Admins List"
               :users="selected_group_admins"
               is-promote
@@ -76,9 +76,11 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
+import UserTableManagement from '~/components/UserTableManagement'
 
 export default {
   name: 'SettingsPage',
+  components: { UserTableManagement },
   data () {
     return {}
   },

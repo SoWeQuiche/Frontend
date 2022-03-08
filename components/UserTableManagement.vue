@@ -96,6 +96,8 @@
 </template>
 
 <script>
+import { without } from 'lodash'
+
 export default {
   name: 'UserTableManagement',
   props: {
@@ -135,9 +137,7 @@ export default {
   },
   computed: {
     availableExistingUsers () {
-      return this.existingUsers.filter((user) => {
-        return this.users.findIndex(u => u.mail === user.mail) === -1
-      })
+      return without(this.users, ...this.existingUsers.map(user => user.mail))
     },
     isPromoteColor () {
       if (this.isPromote) {
