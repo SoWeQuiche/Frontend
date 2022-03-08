@@ -217,6 +217,7 @@ const TimeBasedToken = require('~/scripts/generate-tbt.js')
 
 export default {
   name: 'SessionPage',
+  fetchOnServer: false,
   filters: {
     presentColor (value) {
       if ([null, undefined].includes(value)) { return '' }
@@ -289,14 +290,9 @@ export default {
         .reduce((acc, attendance) => {
           const { isPresent, signDate } = attendance
 
-          if (isPresent === true) {
-            acc.present++
-          } else if (isPresent === false) {
-            acc.away++
-          } else {
-            acc.not_informed++
-          }
-
+          if (isPresent === true) { acc.present++ }
+          if (isPresent === false) { acc.away++ }
+          if (isPresent !== false && isPresent !== true) { acc.not_informed++ }
           if (isPresent && signDate) { acc.signed++ }
 
           return acc

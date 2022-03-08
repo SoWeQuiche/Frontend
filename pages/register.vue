@@ -123,8 +123,7 @@ export default {
         password: this.password
       }).then(() => {
         this.$router.push('/login')
-        this.loading = false
-      }).catch(() => {
+      }).finally(() => {
         this.loading = false
       })
     }
