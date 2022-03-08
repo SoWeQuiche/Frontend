@@ -9,13 +9,13 @@
         <v-card-subtitle class="text-center mt-2">
           <span class="grey--text">Time Left:</span>
           <span v-if="!isTimerEnded" class="pl-1 text-h6">{{ time_left.hours | addZero }}h {{ time_left.minutes | addZero }}m {{ time_left.seconds | addZero }}s</span>
-          <span v-else>Session Ended</span>
+          <span v-else class="pl-1 text-h6">Session Ended</span>
         </v-card-subtitle>
       </v-card>
       <div v-if="!isMobile" style="min-width: 200px;">
         <span class="grey--text">Time Left:</span>
         <span v-if="!isTimerEnded" class="pl-1 text-h6">{{ time_left.hours | addZero }}h {{ time_left.minutes | addZero }}m {{ time_left.seconds | addZero }}s</span>
-        <span v-else>Session Ended</span>
+        <span v-else class="pl-1 text-h6">Session Ended</span>
       </div>
     </v-col>
     <v-col cols="12" class="pl-8 d-flex justify-center justify-md-start align-center flex-column flex-md-row">
@@ -61,7 +61,7 @@
         <div class="d-flex align-center">
           <div>
             Participants
-            <span class="ml-2 blue--text">{{ users.length }}</span>
+            <span class="ml-2 blue--text">{{ attendances.length }}</span>
           </div>
           <v-divider vertical class="mx-5" />
           <div>
@@ -106,22 +106,22 @@
         <v-col :cols="usersDisplaySize.global.cols" :md="usersDisplaySize.global.md" :lg="usersDisplaySize.global.lg">
           <v-row>
             <v-col
-              v-for="user in users"
-              :key="user._id"
+              v-for="attendance in attendances"
+              :key="attendance._id"
               :cols="usersDisplaySize.users.cols"
               :md="usersDisplaySize.users.md"
               :lg="usersDisplaySize.users.lg"
               :xl="usersDisplaySize.users.xl"
             >
-              <v-card class="mx-auto" outlined :color="user.present | presentColor">
+              <v-card class="mx-auto" outlined :color="attendance.isPresent | presentColor">
                 <v-card-actions>
                   <v-list-item class="grow">
                     <v-list-item-content>
-                      <v-list-item-title :title="`${user.lastname.toUpperCase()} ${user.firstname}`">
-                        {{ user.lastname.toUpperCase() }} {{ user.firstname }}
+                      <v-list-item-title :title="`${attendance.user.lastname.toUpperCase()} ${attendance.user.firstname}`">
+                        {{ attendance.user.lastname.toUpperCase() }} {{ attendance.user.firstname }}
                       </v-list-item-title>
-                      <v-list-item-subtitle class="grey--text" :title="user.mail">
-                        {{ user.mail }}
+                      <v-list-item-subtitle class="grey--text" :title="attendance.user.mail">
+                        {{ attendance.user.mail }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
 
@@ -134,8 +134,8 @@
                         color="green"
                         outlined
                         icon
-                        :disabled="user.present === true"
-                        @click="user.present = true"
+                        :disabled="attendance.isPresent === true"
+                        @click="updateAttendancePresence(attendance, true)"
                       >
                         <v-icon>mdi-account-check-outline</v-icon>
                       </v-btn>
@@ -144,8 +144,8 @@
                         outlined
                         icon
                         class="ml-3 mr-2"
-                        :disabled="user.present === false"
-                        @click="user.present = false"
+                        :disabled="attendance.isPresent === false"
+                        @click="updateAttendancePresence(attendance, false)"
                       >
                         <v-icon>mdi-account-remove-outline</v-icon>
                       </v-btn>
@@ -219,7 +219,7 @@ export default {
   name: 'SessionPage',
   filters: {
     presentColor (value) {
-      if (value === null) { return '' }
+      if ([null, undefined].includes(value)) { return '' }
       if (value) { return '#4CAF5033' }
       return '#F4433633'
     },
@@ -235,7 +235,7 @@ export default {
         from_time: '',
         to_time: ''
       },
-      users: [],
+      attendances: [],
       sign_mode: 'none',
       session_code: '000000',
       qr_code_secret: 'secret',
@@ -251,31 +251,27 @@ export default {
     }
   },
   async fetch () {
-    this.$axios.get('https://randomuser.me/api/?results=20')
-      .then(({ data: { results } }) => {
-        this.users = results.map(({ login, name, email }) => ({
-          _id: login.uuid,
-          firstname: name.first,
-          lastname: name.last,
-          mail: email,
-          present: Math.random() > 0.3 ? Math.random() > 0.5 : null,
-          signed: Math.random() > 0.5
-        }))
-      })
+    await this.fetchGroup(this.$route.params.groupId)
+    await this.fetchOrganization(this.selected_group.organization)
 
     const { data: session } = await this.$axios.get(`/timeslots/${this.uid}`)
     this.session = session
-    this.session.day = moment(session.day).format('dddd Do MMMM YYYY')
+    this.session.day = moment(session.startDate).format('dddd Do MMMM YYYY')
+
+    if (!moment(session.startDate).isSame(moment(session.endDate), 'day')) {
+      this.session.other_day = moment(session.endDate).format('dddd Do MMMM YYYY')
+    }
+
     this.session.from_time = moment(session.startDate).format('HH:mm')
     this.session.to_time = moment(session.endDate).format('HH:mm')
 
     this.updateTimeLeft()
 
-    await this.fetchGroup(this.$route.params.groupId)
+    await this.fetchAttendances()
   },
   head () {
     return {
-      title: `Group - ${this.selected_group.name}, Session - ${this.session.day} from ${this.session.from_time} to ${this.session.to_time}`
+      title: `Group - ${this.selected_group.name}, Session - ${this.displayDate}`
     }
   },
   computed: {
@@ -289,28 +285,22 @@ export default {
       return this.$vuetify.breakpoint.xs
     },
     globalInfos () {
-      const globalInfos = {
-        signed: 0,
-        present: 0,
-        away: 0,
-        not_informed: 0
-      }
+      return this.attendances
+        .reduce((acc, attendance) => {
+          const { isPresent, signDate } = attendance
 
-      this.users.forEach((user) => {
-        if (user.present === true) {
-          globalInfos.present++
-        } else if (user.present === false) {
-          globalInfos.away++
-        } else {
-          globalInfos.not_informed++
-        }
+          if (isPresent === true) { acc.present++ }
+          if (isPresent === false) { acc.away++ }
+          if (isPresent !== false && isPresent !== true) { acc.not_informed++ }
+          if (isPresent && signDate) { acc.signed++ }
 
-        if (user.present && user.signed) {
-          globalInfos.signed++
-        }
-      })
-
-      return globalInfos
+          return acc
+        }, {
+          present: 0,
+          away: 0,
+          not_informed: 0,
+          signed: 0
+        })
     },
     usersDisplaySize () {
       switch (this.sign_mode) {
@@ -385,9 +375,15 @@ export default {
           }
         },
         {
-          text: `Session - ${this.session.day} from ${this.session.from_time} to ${this.session.to_time}`
+          text: `Session - ${this.displayDate}`
         }
       ]
+    },
+    displayDate () {
+      if (this.session.other_day) {
+        return `From ${this.session.day} ${this.session.from_time} to ${this.session.other_day} ${this.session.to_time}`
+      }
+      return `${this.session.day} from ${this.session.from_time} to ${this.session.to_time}`
     }
   },
   mounted () {
@@ -401,9 +397,26 @@ export default {
     clearInterval(this.qr_code_interval)
   },
   methods: {
+    ...mapActions('organizations', [
+      'fetchOrganization'
+    ]),
     ...mapActions('groups', [
       'fetchGroup'
     ]),
+    async fetchAttendances (secondFetch = false) {
+      const { data } = await this.$axios.get(`/attendances/timeslot/${this.uid}`)
+
+      this.attendances = data.map((attendance) => {
+        attendance.isPresent = attendance.isPresent || null
+        attendance.signDate = attendance.signDate || null
+        return attendance
+      })
+
+      if (!data.length && !secondFetch && !this.isTimerEnded) {
+        await this.$axios.post(`/attendances/timeslot/${this.uid}`)
+        await this.fetchAttendances(true)
+      }
+    },
     windowResize: debounce(function () {
       if (this.sign_mode === 'qrcode' && this.$refs.qrcodeCanvasContainer) {
         this.qr_code_max_size = Math.min(this.$refs.qrcodeCanvasContainer.clientWidth - 24, Math.min(window.innerHeight - 300, this.$refs.qrcodeCanvasContainer.clientWidth - 24))
@@ -446,9 +459,17 @@ export default {
       }
     },
     makeAllPresent () {
-      this.users.forEach((user) => {
-        user.present = true
-      })
+      this.attendances.forEach((attendance) => { this.updateAttendancePresence(attendance, true) })
+    },
+    async updateAttendancePresence (attendance, present) {
+      const oldPresent = attendance.isPresent
+      attendance.isPresent = present
+
+      try {
+        await this.$axios.patch(`/attendances/${attendance._id}/define-presence`, { isPresent: present })
+      } catch (e) {
+        attendance.isPresent = oldPresent
+      }
     }
   }
 }

@@ -7,7 +7,7 @@
       top
       left
       color="primary"
-      @click="organization_drawer = !organization_drawer"
+      @click="openOrganizationDrawer"
     >
       <v-icon>mdi-menu</v-icon>
     </v-btn>
@@ -46,7 +46,7 @@
                 hide-details
                 outlined
                 dense
-                :loading="$fetchState.pending"
+                :loading="loading"
                 no-data-text="You are not part of an organization"
                 @change="setSelectedOrganization"
               />
@@ -55,7 +55,7 @@
         </v-list-item>
         <v-list-item v-if="isAdmin || isOrganizationAdmin" class="mt-2">
           <v-row class="d-flex justify-center">
-            <v-col v-if="isOrganizationAdmin" cols="12">
+            <v-col cols="12">
               <v-row justify="center">
                 <v-col cols="3">
                   <v-tooltip color="primary" bottom>
@@ -78,91 +78,27 @@
                   </v-tooltip>
                 </v-col>
                 <v-col cols="3">
-                  <v-tooltip color="primary" bottom>
+                  <v-tooltip color="blue-grey" bottom>
                     <template #activator="{ on, attrs }">
                       <v-btn
+                        link
                         block
                         small
                         outlined
-                        color="primary"
+                        color="blue-grey"
+                        :to="{ name: 'organizations-settings' }"
                         v-bind="attrs"
                         v-on="on"
-                        @click="user_add_organization_dialog = true"
                       >
                         <v-icon>
-                          mdi-account-plus-outline
+                          mdi-cog-outline
                         </v-icon>
                       </v-btn>
                     </template>
-                    <span>Add user to Organization</span>
+                    <span>Organization Settings</span>
                   </v-tooltip>
                 </v-col>
-                <v-col cols="3">
-                  <v-tooltip color="green" bottom>
-                    <template #activator="{ on, attrs }">
-                      <v-btn
-                        block
-                        small
-                        outlined
-                        color="green"
-                        v-bind="attrs"
-                        v-on="on"
-                        @click="promote_organization_dialog = true"
-                      >
-                        <v-icon>
-                          mdi-crown-outline
-                        </v-icon>
-                      </v-btn>
-                    </template>
-                    <span>Promote someone Admin of Organization</span>
-                  </v-tooltip>
-                </v-col>
-              </v-row>
-            </v-col>
-            <v-col cols="12">
-              <v-row v-if="isAdmin" justify="center">
-                <v-col cols="3">
-                  <v-menu
-                    nudge-right="-72"
-                    nudge-top="-5"
-                    offset-y
-                  >
-                    <template #activator="{ on: onMenu }">
-                      <v-tooltip color="red" bottom>
-                        <template #activator="{ on: onTooltip }">
-                          <v-btn
-                            block
-                            small
-                            outlined
-                            color="red"
-                            v-on="{ ...onMenu, ...onTooltip }"
-                          >
-                            <v-icon>
-                              mdi-delete
-                            </v-icon>
-                          </v-btn>
-                        </template>
-                        <span>Delete Organization</span>
-                      </v-tooltip>
-                    </template>
-
-                    <v-card>
-                      <v-card-actions>
-                        <v-btn
-                          color="red"
-                          dark
-                          @click="deleteOrganization"
-                        >
-                          <v-icon left>
-                            mdi-alert-outline
-                          </v-icon>
-                          Confirm Delete
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-menu>
-                </v-col>
-                <v-col cols="3">
+                <v-col v-if="isAdmin" cols="3">
                   <v-tooltip color="primary" bottom>
                     <template #activator="{ on, attrs }">
                       <v-btn
@@ -277,94 +213,6 @@
         </v-card>
       </v-dialog>
       <v-dialog
-        v-model="user_add_organization_dialog"
-        max-width="400"
-      >
-        <v-card>
-          <v-card-title>
-            <span class="text-h5">Organization Member</span>
-          </v-card-title>
-          <v-card-text>
-            <v-container>
-              <v-row>
-                <v-col
-                  cols="12"
-                >
-                  <v-text-field
-                    v-model="user_add_organization_email"
-                    label="Email"
-                    hide-details
-                    required
-                    outlined
-                    @keyup.enter="addOrganizationUser"
-                  />
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn
-              color="grey"
-              text
-              @click="user_add_organization_dialog = false"
-            >
-              Close
-            </v-btn>
-            <v-btn
-              color="primary"
-              @click="addOrganizationUser"
-            >
-              Add
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog
-        v-model="promote_organization_dialog"
-        max-width="400"
-      >
-        <v-card>
-          <v-card-title>
-            <span class="text-h5">Organization Administrator</span>
-          </v-card-title>
-          <v-card-text>
-            <v-container>
-              <v-row>
-                <v-col
-                  cols="12"
-                >
-                  <v-text-field
-                    v-model="promote_organization_email"
-                    label="Email"
-                    hide-details
-                    required
-                    outlined
-                    @keyup.enter="promoteOrganizationAdmin"
-                  />
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn
-              color="grey"
-              text
-              @click="promote_organization_dialog = false"
-            >
-              Close
-            </v-btn>
-            <v-btn
-              color="green"
-              @click="promoteOrganizationAdmin"
-            >
-              Promote
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog
         v-model="create_organization_dialog"
         max-width="300"
       >
@@ -418,9 +266,9 @@ import { mapActions, mapMutations, mapState } from 'vuex'
 export default {
   name: 'DefaultLayout',
   middleware: 'auth',
-  fetchOnServer: false,
   data () {
     return {
+      loading: false,
       organization_drawer: false,
       organization_name: '',
       create_organization_dialog: false,
@@ -432,11 +280,6 @@ export default {
       selected_group: 1,
       create_group_dialog: false
     }
-  },
-  async fetch () {
-    await this.fetchOrganizations()
-    await this.fetchOrganizationAdmins()
-    await this.fetchGroups()
   },
   computed: {
     ...mapState('organizations', {
@@ -468,7 +311,9 @@ export default {
   methods: {
     ...mapActions('organizations', [
       'fetchOrganizations',
-      'fetchOrganizationAdmins'
+      'fetchOrganizationAdmins',
+      'fetchOrganizationUsers',
+      'deleteOrganization'
     ]),
     ...mapActions('groups', [
       'fetchGroups'
@@ -480,38 +325,21 @@ export default {
       this.$auth.logout()
       this.$router.push('/login')
     },
+    async openOrganizationDrawer () {
+      this.organization_drawer = true
+
+      this.loading = true
+      await this.fetchOrganizations()
+      await this.fetchOrganizationAdmins()
+      this.loading = false
+    },
     createOrganization () {
       this.$axios.post('/organizations', {
         name: this.organization_name
       }).then(() => {
         this.create_organization_dialog = false
         this.organization_name = ''
-        this.$fetch()
-      })
-    },
-    deleteOrganization () {
-      this.$axios.delete(`/organizations/${this.selected_organization._id}`)
-        .then(() => {
-          this.selected_organization = null
-          this.$fetch()
-        })
-    },
-    addOrganizationUser () {
-      this.$axios.post(`/organizations/${this.selected_organization._id}/users`, {
-        mail: this.user_add_organization_email
-      }).then(() => {
-        this.user_add_organization_dialog = false
-        this.user_add_organization_email = ''
-        this.$fetch()
-      })
-    },
-    promoteOrganizationAdmin () {
-      this.$axios.post(`/organizations/${this.selected_organization._id}/admins`, {
-        mail: this.promote_organization_email
-      }).then(() => {
-        this.promote_organization_dialog = false
-        this.promote_organization_email = ''
-        this.$fetch()
+        this.fetchOrganizations()
       })
     },
     createGroup () {
@@ -519,6 +347,7 @@ export default {
         name: this.group_name
       }).then(() => {
         this.create_group_dialog = false
+        this.group_name = ''
         this.fetchGroups()
       })
     },
@@ -529,6 +358,7 @@ export default {
     setSelectedOrganization (organization) {
       this.setSelectedOrganizationById(organization)
       this.fetchOrganizationAdmins()
+      this.fetchOrganizationUsers()
       this.fetchGroups()
     }
   }

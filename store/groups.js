@@ -12,13 +12,12 @@ const actions = {
   async fetchGroup ({ state, commit }, groupId) {
     commit('setLoading', true)
 
-    if (state.selected_group?._id === groupId) {
-      commit('setLoading', false)
-      return
+    if (state.selected_group?._id !== groupId) {
+      const group = await this.$axios.$get(`/groups/${groupId}`)
+      commit('setSelectedGroup', group)
+      commit('setSelectedGroupAdmins', [])
+      commit('setSelectedGroupUsers', [])
     }
-
-    const group = await this.$axios.$get(`/groups/${groupId}`)
-    commit('setSelectedGroup', group)
 
     commit('setLoading', false)
   },
@@ -34,9 +33,30 @@ const actions = {
     const groupAdmins = await this.$axios.$get(`/groups/${state.selected_group?._id}/admins`)
     commit('setSelectedGroupAdmins', groupAdmins)
   },
+  async addUserToGroup ({ state, commit, dispatch }, mail) {
+    await this.$axios.$post(`/groups/${state.selected_group?._id}/users`, { mail })
+    dispatch('fetchGroupUsers')
+  },
+  async deleteUserFromGroup ({ state, commit, dispatch }, userId) {
+    await this.$axios.$delete(`/groups/${state.selected_group?._id}/users/${userId}`)
+    dispatch('fetchGroupUsers')
+  },
   async fetchGroupUsers ({ state, commit }) {
     const groupUsers = await this.$axios.$get(`/groups/${state.selected_group?._id}/users`)
     commit('setSelectedGroupUsers', groupUsers)
+  },
+  async addAdminToGroup ({ state, commit, dispatch }, mail) {
+    await this.$axios.$post(`/groups/${state.selected_group?._id}/admins`, { mail })
+    dispatch('fetchGroupAdmins')
+  },
+  async deleteAdminFromGroup ({ state, commit, dispatch }, userId) {
+    await this.$axios.$delete(`/groups/${state.selected_group?._id}/admins/${userId}`)
+    dispatch('fetchGroupAdmins')
+  },
+  async deleteGroup ({ state, commit, dispatch }) {
+    await this.$axios.$delete(`/groups/${state.selected_group?._id}`)
+    commit('setSelectedGroup', {})
+    dispatch('fetchGroups')
   }
 }
 

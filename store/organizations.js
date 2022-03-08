@@ -8,24 +8,64 @@ const state = () => ({
 const getters = {}
 
 const actions = {
-  async fetchOrganization ({ commit, state }, organizationId) {
+  async fetchOrganization ({ commit, state, dispatch }, organizationId) {
     if (state.selected_organization?._id === organizationId) { return }
 
-    const organization = await this.$axios.$get(`/organizations/${organizationId}`)
-    commit('setSelectedOrganization', organization)
+    if (state.selected_organization?._id !== organizationId) {
+      const organization = await this.$axios.$get(`/organizations/${organizationId}`)
+      commit('setSelectedOrganization', organization)
+      dispatch('fetchOrganizationUsers')
+      dispatch('fetchOrganizationAdmins')
+    }
+
+    await dispatch('groups/fetchGroups', null, { root: true })
   },
-  async fetchOrganizations ({ commit }) {
+  async fetchOrganizations ({ commit, state, dispatch, rootState }) {
     const organizations = await this.$axios.$get('/organizations')
     commit('setOrganizations', organizations)
-    commit('setSelectedOrganization', organizations[0] || {})
+
+    if (!state.selected_organization._id) {
+      if (organizations[0]._id) {
+        dispatch('fetchOrganization', organizations[0]._id)
+      } else {
+        commit('setSelectedOrganization', {})
+      }
+    }
+
+    if (state.selected_organization._id !== rootState.groups.selected_group.organization) {
+      await dispatch('groups/fetchGroups', null, { root: true })
+    }
+  },
+  async fetchOrganizationUsers ({ state, commit }) {
+    if (!state.selected_organization._id) { return }
+    const organizationUsers = await this.$axios.$get(`/organizations/${state.selected_organization._id}/users`)
+    commit('setOrganizationUsers', organizationUsers)
+  },
+  async addUserToOrganization ({ state, commit, dispatch }, mail) {
+    await this.$axios.$post(`/organizations/${state.selected_organization._id}/users`, { mail })
+    dispatch('fetchOrganizationUsers')
+  },
+  async deleteUserFromOrganization ({ state, commit, dispatch }, userId) {
+    await this.$axios.$delete(`/organizations/${state.selected_organization._id}/users/${userId}`)
+    dispatch('fetchOrganizationUsers')
   },
   async fetchOrganizationAdmins ({ state, commit }) {
+    if (!state.selected_organization._id) { return }
     const organizationAdmins = await this.$axios.$get(`/organizations/${state.selected_organization._id}/admins`)
     commit('setOrganizationAdmins', organizationAdmins)
   },
-  async fetchOrganizationUsers ({ state, commit }) {
-    const organizationUsers = await this.$axios.$get(`/organizations/${state.selected_organization._id}/users`)
-    commit('setOrganizationUsers', organizationUsers)
+  async addAdminToOrganization ({ state, commit, dispatch }, mail) {
+    await this.$axios.$post(`/organizations/${state.selected_organization._id}/admins`, { mail })
+    dispatch('fetchOrganizationAdmins')
+  },
+  async deleteAdminFromOrganization ({ state, commit, dispatch }, userId) {
+    await this.$axios.$delete(`/organizations/${state.selected_organization._id}/admins/${userId}`)
+    dispatch('fetchOrganizationAdmins')
+  },
+  async deleteOrganization ({ state, commit, dispatch }) {
+    await this.$axios.$delete(`/organizations/${state.selected_organization._id}`)
+    commit('setSelectedOrganization', state.organizations[0] || {})
+    dispatch('fetchOrganizations')
   }
 }
 
