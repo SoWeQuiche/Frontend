@@ -1,16 +1,18 @@
 {
-  "applinks": {
-    "apps": [],
-    "details": [
-      {
-        "appID": "S4J5D3N22R.com.maxencemottard.swq",
-        "paths": ["/signature"]
-      }
-    ]
-  },
-  "webcredentials": {
-    "apps": [
-      "S4J5D3N22R.com.maxencemottard.swq"
-    ]
-  }
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "S4J5D3N22R.com.maxencemottard.swq",
+                "paths": [
+                    "/sign"
+                ]
+            }
+        ]
+    },
+    "webcredentials": {
+        "apps": [
+            "S4J5D3N22R.com.maxencemottard.swq"
+        ]
+    }
 }
