@@ -38,11 +38,13 @@
     <v-col cols="12">
       <v-container>
         <v-row>
-          <v-col cols="12">
+          <v-col cols="12" md="10" offset-md="1" lg="8" offset-lg="2">
             <v-expansion-panels v-model="session_groups_panels" flat mandatory>
-              <v-expansion-panel class="transparent">
-                <v-card outlined :loading="$fetchState.pending">
-                  <v-expansion-panel-header>Active Session</v-expansion-panel-header>
+              <v-card outlined :loading="$fetchState.pending" width="100%">
+                <v-expansion-panel :key="0" class="transparent">
+                  <v-expansion-panel-header>
+                    Active Session
+                  </v-expansion-panel-header>
                   <v-expansion-panel-content>
                     <v-row>
                       <v-col
@@ -72,10 +74,10 @@
                       </v-col>
                     </v-row>
                   </v-expansion-panel-content>
-                </v-card>
-              </v-expansion-panel>
-              <v-expansion-panel class="transparent">
-                <v-card outlined class="my-2">
+                </v-expansion-panel>
+              </v-card>
+              <v-card outlined width="100%" class="my-2">
+                <v-expansion-panel class="transparent">
                   <v-expansion-panel-header>Coming Sessions</v-expansion-panel-header>
                   <v-expansion-panel-content>
                     <v-row>
@@ -91,10 +93,10 @@
                       </v-col>
                     </v-row>
                   </v-expansion-panel-content>
-                </v-card>
-              </v-expansion-panel>
-              <v-expansion-panel class="transparent">
-                <v-card outlined>
+                </v-expansion-panel>
+              </v-card>
+              <v-card outlined width="100%">
+                <v-expansion-panel class="transparent">
                   <v-expansion-panel-header>Passed Sessions</v-expansion-panel-header>
                   <v-expansion-panel-content>
                     <v-row>
@@ -110,8 +112,8 @@
                       </v-col>
                     </v-row>
                   </v-expansion-panel-content>
-                </v-card>
-              </v-expansion-panel>
+                </v-expansion-panel>
+              </v-card>
             </v-expansion-panels>
           </v-col>
         </v-row>
@@ -275,9 +277,11 @@
 <script>
 import moment from 'moment'
 import { mapActions, mapState } from 'vuex'
+import SessionCard from '~/components/SessionCard'
 
 export default {
   name: 'GroupPage',
+  components: { SessionCard },
   data () {
     return {
       sessions: [],
