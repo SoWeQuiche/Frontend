@@ -83,13 +83,20 @@ export default {
       local: {
         token: {
           property: 'token',
-          global: true
+          global: true,
+          maxAge: 1800
+        },
+        refreshToken: {
+          property: 'refreshToken',
+          data: 'refreshToken',
+          maxAge: 2628000
         },
         user: {
           property: false
         },
         endpoints: {
           login: { url: '/auth/login', method: 'post' },
+          refresh: { url: '/auth/refresh', method: 'post' },
           logout: false,
           user: { url: '/auth/me', method: 'get' }
         }

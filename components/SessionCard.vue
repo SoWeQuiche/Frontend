@@ -1,5 +1,5 @@
 <template>
-  <v-col cols="12" md="6" lg="4" xl="3" :class="{ 'hoverScale': hasLink, 'defaultCursor': !hasLink }">
+  <v-col cols="12" md="6" lg="6" xl="4" :class="{ 'hoverScale': hasLink, 'defaultCursor': !hasLink }">
     <v-card
       outlined
       :to="redirectTo"

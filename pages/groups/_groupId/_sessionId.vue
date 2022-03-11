@@ -199,7 +199,7 @@
               Session Code
             </div>
             <div class="text-h2" style="letter-spacing: 10px !important;">
-              {{ session_code }}
+              {{ session.signCode }}
             </div>
           </v-card>
         </v-col>
@@ -237,8 +237,6 @@ export default {
       },
       attendances: [],
       sign_mode: 'none',
-      session_code: '000000',
-      qr_code_secret: 'secret',
       qr_code_data: '',
       qr_code_img: '',
       qr_code_max_size: 0,
@@ -427,7 +425,8 @@ export default {
       this.updateQRCode()
     }, 100),
     updateQRCode () {
-      this.qr_code_data = TimeBasedToken(this.qr_code_secret, 30, 8)
+      const uniqueToken = TimeBasedToken(this.session?.qrcodeSecret, 30, 8)
+      this.qr_code_data = `https://api.sign.quiches.ovh/sign?timeslotId=${this.session._id}&code=${uniqueToken}`
 
       if (this.sign_mode === 'qrcode' && this.$refs.qrcodeCanvasContainer) {
         QRCode
